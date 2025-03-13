@@ -21,6 +21,7 @@ cli/
 │   │   ├── logger.ts           # Logging helpers
 │   │   ├── input-handler.ts    # Interactive input handling
 │   │   ├── spinner.ts          # Loading indicators
+│   │   ├── subprocess.ts       # Manages Python subprocess calls
 │   │── bin/                    # CLI Entrypoint
 │   │   ├── nearai.ts           # Executable CLI script
 │   │── index.ts                # CLI initialization logic
@@ -73,12 +74,12 @@ examples/
 │   ├── agent.ts
 │   ├── package.json
 │   ├── README.md
-│── advanced-agent/                # Complex multi-tool agent
+│── advanced-agent/               # Complex multi-tool agent
 │   ├── agent.ts
 │   ├── tools/
 │   ├── package.json
 │   ├── README.md
-│── near-integrated-agent/         # Example using NEAR blockchain
+│── near-integrated-agent/        # Example using NEAR blockchain
 │   ├── agent.ts
 │   ├── package.json
 │   ├── README.md
