@@ -4,6 +4,7 @@
  */
 
 import { Command } from "commander";
+import { loadBanner } from "./utils/banner.js";
 
 // Import your commands
 import { createCmd } from "./commands/create.js";
@@ -15,6 +16,9 @@ import { helpCmd } from "./commands/help.js";
 
 export async function main(): Promise<void> {
     const program = new Command();
+
+    // Load the banner
+    loadBanner();
 
     // CLI metadata
     program
@@ -28,7 +32,7 @@ export async function main(): Promise<void> {
     // program.addCommand(deployCmd);
     // program.addCommand(loginCmd);
     // program.addCommand(configCmd);
-    // program.addCommand(helpCmd);
+    program.addCommand(helpCmd);
 
     // Parse the command-line arguments
     await program.parseAsync(process.argv);

@@ -14,11 +14,15 @@
     "test": "echo \"No tests yet\""
   },
   "dependencies": {
+    "boxen": "^8.0.1",
     "chalk": "^5.4.1",
-    "commander": "^10.0.0"
+    "commander": "^10.0.0",
+    "ora": "^8.2.0",
+    "prompts": "^2.4.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/prompts": "^2.4.9",
     "typescript": "^5.1.0"
   }
 }
