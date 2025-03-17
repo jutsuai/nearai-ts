@@ -14,9 +14,21 @@ export const createCmd = new Command("create")
 
         Boxer.box(
             "Agent Creator",
-            chalk.hex(NEARAI_COLORS['teal'])("Let's create a new agent! 🦾\n") +
+            chalk.hex(NEARAI_COLORS['teal']).bold("Let's create a new agent! 🦾\n") +
             chalk.hex(NEARAI_COLORS['default'])("We'll need some basic information to get started."),
             "teal"
+        );
+
+        Boxer.box(
+            "Agent Name Rules",
+            chalk.hex(NEARAI_COLORS['white'])("Choose a unique name for your agent using only:\n\n") +
+            chalk.hex(NEARAI_COLORS['default'])("  • letters\n") +
+            chalk.hex(NEARAI_COLORS['default'])("  • numbers\n") +
+            chalk.hex(NEARAI_COLORS['default'])("  • dots (.)\n") +
+            chalk.hex(NEARAI_COLORS['default'])("  • hyphens (-)\n") +
+            chalk.hex(NEARAI_COLORS['default'])("  • underscores (_)\n\n") +
+            chalk.hex(NEARAI_COLORS['teal'])("Examples: 'code-reviewer', 'data.analyzer', 'text_summarizer'"),
+            "blue"
         );
 
         // If user didn't pass a name, let's prompt for it:

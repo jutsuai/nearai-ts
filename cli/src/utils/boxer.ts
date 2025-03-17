@@ -19,11 +19,6 @@ export class Boxer {
         // Colorize the content as well
         const styledContent = chalk.hex(colorHex)(content);
 
-        // Grab the current terminal width (fallback to 80 if undefined)
-        // We'll subtract a bit to avoid wrapping caused by the box borders and potential margin/padding.
-        const terminalWidth = process.stdout.columns || 80;
-        const maxWidth = terminalWidth - 8;
-
         // Create the box
         const box = boxen(styledContent, {
             padding: .5,
@@ -32,7 +27,7 @@ export class Boxer {
             titleAlignment: "center",
             borderStyle: "round",
             borderColor: colorHex,
-            width: maxWidth,
+            width: (process.stdout.columns || 80) - 2,
         });
 
         // Print the box
