@@ -9,7 +9,8 @@
     "nearai": "./dist/bin/nearai.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy-template",
+    "copy-template": "cp -r src/template dist",
     "start": "npm run build && node dist/bin/nearai.js",
     "test": "echo \"No tests yet\""
   },

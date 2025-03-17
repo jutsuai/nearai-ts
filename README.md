@@ -10,6 +10,8 @@ Handles CLI execution, command parsing, and interactive agent running.
 ```
 cli/
 │── src/
+│   │── bin/                    # CLI Entrypoint
+│   │   ├── nearai.ts           # Executable CLI script
 │   │── commands/               # CLI Commands
 │   │   ├── create.ts           # nearai create <agent>
 │   │   ├── run.ts              # nearai run <agent>
@@ -17,13 +19,17 @@ cli/
 │   │   ├── login.ts            # nearai login
 │   │   ├── help.ts             # nearai --help
 │   │   ├── config.ts           # nearai config
+│   │── template/               # Agent template files
+│   │   ├── agent.ts            # Default agent template
+│   │   ├── metadata.json       # Default agent configuration
 │   │── utils/                  # CLI utilities (helpers)
+│   │   ├── banner.ts           # CLI banner
+│   │   ├── boxer.ts            # Boxed text
+│   │   ├── colors.ts           # CLI color helpers
 │   │   ├── logger.ts           # Logging helpers
 │   │   ├── input-handler.ts    # Interactive input handling
 │   │   ├── spinner.ts          # Loading indicators
 │   │   ├── subprocess.ts       # Manages Python subprocess calls
-│   │── bin/                    # CLI Entrypoint
-│   │   ├── nearai.ts           # Executable CLI script
 │   │── index.ts                # CLI initialization logic
 │── dist/                       # Compiled CLI output
 │── tests/                      # CLI tests

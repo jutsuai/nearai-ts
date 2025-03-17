@@ -1,5 +1,9 @@
-import prompts from "prompts";
 import { Command } from "commander";
+import prompts from "prompts";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs/promises";
+
 import { Logger } from "../utils/logger.js";
 import { startSpinner } from "../utils/spinner.js";
 import { promptYesNo } from "../utils/input-handler.js";
@@ -7,8 +11,14 @@ import { Boxer } from "../utils/boxer.js";
 import chalk from "chalk";
 import { NEARAI_COLORS } from "../utils/colors.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// This is where we store our template files
+const TEMPLATE_DIR = path.resolve(__dirname, "../template");
+
 export const createCmd = new Command("create")
-    .description("Create a new NEAR AI TypeScript project")
+    .description("Create a new NEARAI TypeScript agent project")
     .argument("[projectName]", "Optional name of the project")
     .action(async (projectName: string | undefined) => {
 
@@ -31,8 +41,8 @@ export const createCmd = new Command("create")
             "blue"
         );
 
-        // If user didn't pass a name, let's prompt for it:
-        let finalName = projectName;
+        // If user didn't pass a name, prompt them
+        let finalName = projectName as string;
         if (!finalName) {
             const response = await prompts({
                 type: "text",
@@ -55,13 +65,46 @@ export const createCmd = new Command("create")
         // Show spinner
         const spinner = startSpinner("Scaffolding new project...");
         try {
-            // Simulate some work
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            // Create the new folder in the current working directory
+            const newProjectPath = path.join(process.cwd(), finalName);
+            await fs.mkdir(newProjectPath, { recursive: true });
 
-            // @TODO - Implement project scaffolding here
+            // Copy agent.ts from template
+            const agentTsSource = await fs.readFile(
+                path.join(TEMPLATE_DIR, "agent.ts"),
+                "utf-8"
+            );
+            await fs.writeFile(
+                path.join(newProjectPath, "agent.ts"),
+                agentTsSource,
+                "utf-8"
+            );
 
+            // Copy metadata.json, override the "name" field
+            const metadataSource = await fs.readFile(
+                path.join(TEMPLATE_DIR, "metadata.json"),
+                "utf-8"
+            );
+            const metadataObj = JSON.parse(metadataSource);
+            metadataObj.name = finalName;
+
+            // @TODO
+            // Update script with further functionality, e.g. set "description" or "tags"
+            // metadataObj.description = "A brand new TypeScript agent for NEAR AI!";
+
+            const updatedMetadata = JSON.stringify(metadataObj, null, 2);
+            await fs.writeFile(
+                path.join(newProjectPath, "metadata.json"),
+                updatedMetadata,
+                "utf-8"
+            );
+
+            // 8) Mark spinner as succeed
             spinner.succeed("Done scaffolding!");
             Logger.success(`Project '${finalName}' created successfully!`);
+
+            // Maybe guide user on next steps
+            Logger.info(`\nNext steps:\n  cd ${finalName}\n  nearai run\n`);
         } catch (err: any) {
             spinner.fail("Failed to create project!");
             Logger.error(err?.message || "Unknown error");
