@@ -25,8 +25,10 @@ cli/
 │   │── bin/                    # CLI Entrypoint
 │   │   ├── nearai.ts           # Executable CLI script
 │   │── index.ts                # CLI initialization logic
+│── dist/                       # Compiled CLI output
 │── tests/                      # CLI tests
 │── package.json                # CLI package metadata
+├── tsconfig.json               # TS config, outputs .js to dist/
 │── tsconfig.json               # TypeScript config
 │── README.md                   # CLI usage guide
 ```
