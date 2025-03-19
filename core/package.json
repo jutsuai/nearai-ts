@@ -1,0 +1,35 @@
+{
+  "name": "nearai-ts-core",
+  "version": "1.0.0",
+  "description": "NEAR AI TypeScript Core SDK",
+  "license": "ISC",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "echo \"No test runner configured yet\" && exit 0"
+  },
+  "dependencies": {
+    "@types/node": "^22.13.10",
+    "dotenv": "^16.4.7",
+    "node": "^20.19.0",
+    "openai": "^4.87.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "keywords": [
+    "nearai",
+    "sdk",
+    "typescript"
+  ],
+  "author": ""
+}

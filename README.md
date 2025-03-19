@@ -29,7 +29,6 @@ cli/
 │   │   ├── logger.ts           # Logging helpers
 │   │   ├── input-handler.ts    # Interactive input handling
 │   │   ├── spinner.ts          # Loading indicators
-│   │   ├── subprocess.ts       # Manages Python subprocess calls
 │   │── index.ts                # CLI initialization logic
 │── dist/                       # Compiled CLI output
 │── tests/                      # CLI tests
@@ -46,25 +45,6 @@ Handles agent execution, configuration management, and environment handling.
 ```
 core/
 │── src/
-│   │── agent/                    # Core agent logic
-│   │   ├── agent.ts              # Main agent execution logic
-│   │   ├── agent-loader.ts       # Loads agents dynamically
-│   │   ├── memory.ts             # Memory management
-│   │   ├── tools.ts              # Plugin/Tool system
-│   │── execution/                # Agent execution logic
-│   │   ├── runner.ts             # Agent execution controller
-│   │   ├── process-handler.ts    # Handles agent subprocesses
-│   │   ├── sandbox.ts            # Sandboxed execution (future-proofing)
-│   │── environment/              # Execution Environment Handling
-│   │   ├── global-env.ts         # Global execution context
-│   │   ├── agent-env.ts          # Per-agent environment settings
-│   │── clients/                  # API Clients (Secure Communication)
-│   │   ├── near-client.ts        # NEAR blockchain integration
-│   │   ├── secure-client.ts      # Handles secure API requests
-│   │   ├── openai-client.ts      # OpenAI LLM interactions
-│   │── config/                   # Configuration System
-│   │   ├── config-manager.ts     # Reads & validates configuration
-│   │   ├── config-types.ts       # Type definitions for configuration
 │   │── index.ts                  # Core SDK entry point
 │── tests/                        # Core SDK test suite
 │── package.json                  # Core SDK metadata
