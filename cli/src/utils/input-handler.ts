@@ -1,21 +1,44 @@
 import prompts from "prompts";
 
 /**
- * Ask the user for multiline text input, e.g. an agent prompt.
+ * Continuously prompt for lines until user enters:
+ *   - blank line, or
+ *   - /done, or
+ *   - /exit
+ * Returns the multi-line text, or empty string if the user wants to exit.
  */
-export async function promptMultiline(question: string): Promise<string> {
-    const response = await prompts({
-        type: "text",
-        name: "value",
-        message: question,
+export async function readMultiLineInput(): Promise<string> {
+    let lines: string[] = [];
 
-        // @TODO - Note to self: Add validation for multiline input
-        // For multiline, we can instruct them to use an editor or accept multi-line input
-        // But prompts doesn't have a built-in multiline. One approach is 'editor' type:
-        // type: 'editor',
-        // We'll do 'text' for simplicity:
-    });
-    return response.value;
+    while (true) {
+        const { line } = await prompts({
+            type: "text",
+            name: "line",
+            message: "›",
+        });
+
+        // If user pressed Ctrl+C or ESC, line will be undefined:
+        if (line === undefined) {
+            return ""; // exit
+        }
+
+        const trimmed = line.trim();
+
+        // Check for exit
+        if (trimmed.toLowerCase() === "/exit") {
+            return "";
+        }
+
+        // If blank line or user typed /done, we finalize:
+        if (!trimmed || trimmed.toLowerCase() === "/done") {
+            // Combine lines into a single multi-line message
+            const multiLine = lines.join("\n").trim();
+            return multiLine;
+        }
+
+        // Otherwise, add to lines array and keep going
+        lines.push(line);
+    }
 }
 
 /**

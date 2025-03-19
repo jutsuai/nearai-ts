@@ -1,15 +1,16 @@
-// @TODO - Update to import new SDK package ("core") when available
-// import { env } from "ts-agent-runner";
+// @TODO - Import from new SDK package ("core") when available
+import { env } from "ts-agent-runner";
 
 (async () => {
     try {
         let user_message = await env.get_last_message_content();
+
         console.log("User input:", user_message);
 
         const messages: any = [
             {
                 role: "system",
-                content: "You are a very smart agent.",
+                content: "You are a smart assistent.",
             },
             {
                 role: "user",
