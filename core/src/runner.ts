@@ -37,7 +37,8 @@ export async function runAgent(
             const authData = JSON.parse(data);
 
             // Example of local deployment keys for environment injection
-            const localDeploymentKeys = ["CDP_API_KEY_NAME", "CDP_API_KEY_PRIVATE_KEY"];
+            // @TODO - Update this to load from developer .env file or custom env vars
+            // const localDeploymentKeys = ["CDP_API_KEY_NAME", "CDP_API_KEY_PRIVATE_KEY"];
 
             // Helper to gather relevant environment variables
             const getEnvVariables = (keys: string[]): Record<string, string> => {
@@ -56,7 +57,7 @@ export async function runAgent(
                 base_url: "https://api.near.ai/v1",
                 // @TODO - The old code forced "agents/agent.ts"; adapt as needed
                 agent_ts_files_to_transpile: [agentPath],
-                env_vars: getEnvVariables(localDeploymentKeys),
+                // env_vars: getEnvVariables(localDeploymentKeys),
             });
         } catch (error) {
             throw new Error(
@@ -72,6 +73,6 @@ export async function runAgent(
     // - Transpile & run your TS agent(s) via AgentEnv
     globalEnv.initialize(jsonString);
 
-    // Optionally, do more work after environment init:
+    // @TODO - o more work after environment init:
     // e.g., log success, manipulate the globalEnv.client, etc.
 }
