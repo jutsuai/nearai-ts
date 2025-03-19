@@ -21,7 +21,8 @@
     "@types/node": "^22.13.10",
     "dotenv": "^16.4.7",
     "node": "^20.19.0",
-    "openai": "^4.87.4"
+    "node-fetch": "^3.3.2",
+    "openai": "^4.88.0"
   },
   "devDependencies": {
     "typescript": "^5.8.2"

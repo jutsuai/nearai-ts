@@ -88,6 +88,14 @@ export const createCmd = new Command("create")
             const metadataObj = JSON.parse(metadataSource);
             metadataObj.name = finalName;
 
+            // Copy package.json from template
+            const packageJsonSource = await fs.readFile(
+                path.join(TEMPLATE_DIR, "package.json"),
+                "utf-8"
+            );
+            const packageJsonObj = JSON.parse(packageJsonSource);
+            packageJsonObj.name = finalName;
+
             // @TODO
             // Update script with further functionality, e.g. set "description" or "tags"
             // metadataObj.description = "A brand new TypeScript agent for NEAR AI!";

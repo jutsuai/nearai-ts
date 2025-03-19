@@ -1,0 +1,26 @@
+{
+  "name": "nearai-ts-cli",
+  "version": "0.1.0",
+  "description": "NEAR AI TypeScript CLI",
+  "keywords": [],
+  "author": "",
+  "type": "module",
+  "bin": {
+    "nearai-ts": "./dist/bin/nearai.js"
+  },
+  "scripts": {
+    "build": "tsc && npm run copy-template",
+    "copy-template": "cp -r src/template dist",
+    "start": "npm run build && node --no-warnings dist/bin/nearai-ts.js",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "boxen": "^8.0.1",
+    "chalk": "^5.4.1",
+    "commander": "^10.0.0",
+    "node-fetch": "^3.3.2",
+    "openai": "^4.87.4",
+    "ora": "^8.2.0",
+    "prompts": "^2.4.2"
+  }
+}

@@ -1,3 +1,11 @@
+// @TODO - Temporary
+import path from "node:path";
+import fs from "node:fs";
+import os from "node:os";
+import fetch from "node-fetch";
+import OpenAI from "openai";
+
+
 import { Command } from "commander";
 import prompts from "prompts";
 import { Logger } from "../utils/logger.js";
@@ -7,7 +15,7 @@ import { Boxer } from "../utils/boxer.js";
 import chalk from "chalk";
 import { NEARAI_COLORS } from "../utils/colors.js";
 
-import { runAgent, runAgentOnePass } from "../../../core/dist/runner.js";
+// import { runAgent, runAgentOnePass, nearAiChatCompletion } from "../../../core/dist/runner.js";
 
 // @TODO - Remove this after implementing actual agent runner
 async function runAgentStub(agentPath: string): Promise<void> {
@@ -86,7 +94,8 @@ export const runCmd = new Command("run")
 
                 // Show spinner as agent is thinking
                 const thinking = startSpinner("Agent is thinking...");
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // await new Promise(resolve => setTimeout(resolve, 1000));
+                // const reply = await nearAiChatCompletion(userMessage);
                 thinking.succeed("Agent responded!");
 
                 // @TODO - Implement
@@ -98,7 +107,8 @@ export const runCmd = new Command("run")
 
                 // Show agent response
                 Logger.info(
-                    chalk.hex(NEARAI_COLORS["teal"])("[Agent Output]: \n")
+                    chalk.hex(NEARAI_COLORS["teal"])("[Agent Output]: \n") +
+                    chalk.hex(NEARAI_COLORS["white"])(reply || "[No output]")
                 );
             }
 
@@ -109,3 +119,41 @@ export const runCmd = new Command("run")
             process.exit(1);
         }
     });
+
+// @TODO - Temporary!!! For Demo!!!
+// export async function nearAiChatCompletion(userInput: string): Promise<string> {
+//     // 1) Load NEAR credentials from ~/.nearai/config.json
+//     const configPath = path.join(os.homedir(), ".nearai", "config.json");
+//     const rawConfig = fs.readFileSync(configPath, "utf-8");
+//     const authData = JSON.parse(rawConfig).auth;
+//     // e.g. { account_id, signature, public_key, ... }
+//
+//     // 2) Build the request body (like an OpenAI-style chat)
+//     //    near.ai may require different fields, so adjust if needed
+//     const requestBody = {
+//         model: "llama-v3p1-70b-instruct", // or another near.ai model name
+//         messages: [
+//             { role: "system", content: "You are a helpful AI agent." },
+//             { role: "user", content: userInput }
+//         ]
+//     } as any;
+//
+//     // 3) Construct the custom header for NEAR auth
+//     //    (If near.ai expects a different format, adapt here)
+//     const userAuthString = JSON.stringify(authData);
+//
+//     const openai = new OpenAI({
+//         baseURL: 'https://api.near.ai/v1',
+//         apiKey: userAuthString,
+//     })
+//
+//     const response = await openai.chat.completions.create({
+//         model: 'llama-v3p1-70b-instruct',
+//         messages: requestBody.messages,
+//     }) as any;
+//
+//     // 5) Parse the response and return the assistant's content
+//     //    near.ai might respond with { choices: [ { message: { content: "..."} } ] }
+//     const content = response.choices?.[0]?.message?.content || "[No content returned]";
+//     return content;
+// }
