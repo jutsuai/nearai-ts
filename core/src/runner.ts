@@ -1,8 +1,9 @@
 import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
+import { spawn } from "node:child_process";
 import dotenv from "dotenv";
-import { globalEnv } from "./environment/globalEnv.js";
+// import { globalEnv } from "./environment/globalEnv.js";
 
 /**
  * runAgent
@@ -18,7 +19,7 @@ import { globalEnv } from "./environment/globalEnv.js";
 export async function runAgent(
     agentPath: string,
     jsonString?: string,
-    configPath?: string
+    configPath?: string,
 ): Promise<void> {
 
     // Load any .env variables if they exist
@@ -70,12 +71,35 @@ export async function runAgent(
         }
     }
 
+    // @TODO - Hold off on doing this until we update the SDK pattern
     // Initialize the global environment, which will:
     // - Parse & store config
     // - Create a SecureHubClient
     // - Transpile & run your TS agent(s) via AgentEnv
-    globalEnv.initialize(jsonString);
+    // globalEnv.initialize(jsonString);
 
     // @TODO - o more work after environment init:
     // e.g., log success, manipulate the globalEnv.client, etc.
+}
+
+export async function runAgentOnePass(agentPath: string): Promise<string> {
+    // convert "agent.ts" => "agent.js"
+    const compiledJs = agentPath.replace(/\.ts$/, ".js");
+    return new Promise<string>((resolve, reject) => {
+        let output = "";
+        const proc = spawn("node", [compiledJs], { stdio: ["ignore", "pipe", "pipe"] });
+
+        proc.stdout.on("data", (buf) => {
+            output += buf.toString();
+        });
+        proc.stderr.on("data", (buf) => {
+            output += "ERR: " + buf.toString();
+        });
+        proc.on("close", (code) => {
+            if (code !== 0) {
+                return reject(new Error(`Agent script exit code ${code}\nLogs:\n${output}`));
+            }
+            resolve(output.trim());
+        });
+    });
 }

@@ -7,6 +7,9 @@ import { Boxer } from "../utils/boxer.js";
 import chalk from "chalk";
 import { NEARAI_COLORS } from "../utils/colors.js";
 
+import { runAgent, runAgentOnePass } from "../../../core/dist/runner.js";
+
+// @TODO - Remove this after implementing actual agent runner
 async function runAgentStub(agentPath: string): Promise<void> {
     // Simulate a short load
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -39,6 +42,7 @@ export const runCmd = new Command("run")
 
         Logger.info(`Preparing to run agent at: ${finalAgentPath}`);
 
+        // Confirm agent run
         const confirm = await promptYesNo(
             `Do you want to run the agent located at '${finalAgentPath}'?`
         );
@@ -52,7 +56,21 @@ export const runCmd = new Command("run")
         try {
             await runAgentStub(finalAgentPath);
             spinner.succeed("Agent ready!");
-            Logger.success(`Agent '${finalAgentPath}' is (pretend) running.\n`);
+            Logger.success(`Agent '${finalAgentPath}' is running.\n`);
+
+            // Step agent environment init
+            // @TODO - Implement
+            // const spinner = startSpinner("Initializing agent environment...");
+            // try {
+            //     // The runAgent function purely sets up config + environment (no UI)
+            //     await runAgent(finalAgentPath);
+            //     spinner.succeed("Environment ready!");
+            //     Logger.success(`Agent '${finalAgentPath}' environment initialized.\n`);
+            // } catch (err: any) {
+            //     spinner.fail("Failed to run agent!");
+            //     Logger.error(err?.message || "Unknown error");
+            //     process.exit(1);
+            // }
 
             // Step 3: Enter interactive loop
             Logger.info(
@@ -66,12 +84,19 @@ export const runCmd = new Command("run")
                     break;
                 }
 
-                // Step 4: Show spinner as if agent is thinking
+                // Show spinner as agent is thinking
                 const thinking = startSpinner("Agent is thinking...");
-                await new Promise(resolve => setTimeout(resolve, 1000)); // stub
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 thinking.succeed("Agent responded!");
 
-                // Step 5: Show placeholder reply
+                // @TODO - Implement
+                // const agentOutput = await runAgentOnePass(finalAgentPath);
+                // Logger.info(
+                //     chalk.hex(NEARAI_COLORS["teal"])("[Agent Output]: \n") +
+                //     chalk.hex(NEARAI_COLORS["white"])(agentOutput || "[No output]")
+                // );
+
+                // Show agent response
                 Logger.info(
                     chalk.hex(NEARAI_COLORS["teal"])("[Agent Output]: \n")
                 );
