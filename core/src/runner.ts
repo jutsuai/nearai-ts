@@ -54,14 +54,14 @@ export async function runAgent(
                 user_auth: JSON.stringify(authData.auth),
                 thread_id: "thread_local",
                 base_url: "https://api.near.ai/v1",
-                // The old code forced "agents/agent.ts"; adapt as needed
+                // @TODO - The old code forced "agents/agent.ts"; adapt as needed
                 agent_ts_files_to_transpile: [agentPath],
                 env_vars: getEnvVariables(localDeploymentKeys),
             });
         } catch (error) {
             throw new Error(
                 `No valid configuration found. 
-         Either provide a jsonString or ensure ${configPath} is valid.`
+                Either provide a jsonString or ensure ${configPath} is valid.`
             );
         }
     }

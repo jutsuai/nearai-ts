@@ -16,8 +16,17 @@ export interface FilePurpose {
 export interface FileObject {
     id: string;
     object: "file";
+
+    // The library typically returns these properties:
     filename?: string;
     purpose?: string;
+    created_at?: number;
+    bytes?: number;
+    status?: string;          // e.g. "uploaded", "processed"
+    status_details?: any;
+    _request_id?: string | null;
+
+    // @TODO - other properties in practice, add them here:
     [key: string]: any;
 }
 

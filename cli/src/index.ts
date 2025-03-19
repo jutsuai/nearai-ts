@@ -8,7 +8,7 @@ import { loadBanner } from "./utils/banner.js";
 
 // Import your commands
 import { createCmd } from "./commands/create.js";
-// import { runCmd } from "./commands/run";
+import { runCmd } from "./commands/run.js";
 // import { deployCmd } from "./commands/deploy";
 // import { loginCmd } from "./commands/login";
 // import { configCmd } from "./commands/config";
@@ -28,7 +28,7 @@ export async function main(): Promise<void> {
 
     // Register subcommands
     program.addCommand(createCmd);
-    // program.addCommand(runCmd);
+    program.addCommand(runCmd);
     // program.addCommand(deployCmd);
     // program.addCommand(loginCmd);
     // program.addCommand(configCmd);

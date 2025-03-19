@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc && npm run copy-template",
     "copy-template": "cp -r src/template dist",
-    "start": "npm run build && node dist/bin/nearai-ts.js",
+    "start": "npm run build && node --no-warnings dist/bin/nearai-ts.js",
     "test": "echo \"No tests yet\""
   },
   "dependencies": {
