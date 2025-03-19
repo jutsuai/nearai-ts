@@ -1,6 +1,6 @@
 import { AgentConfig } from "./configTypes.js";
 import { NearAIClient } from "../clients/nearClient.js";
-import type { SecureHubClient } from "../clients/secureClient.js";
+import type { SecureClient } from "../clients/secureClient.js";
 
 interface ParsedParams {
     thread_id: string;
@@ -51,7 +51,7 @@ class ConfigManager {
         }
     }
 
-    getSecureClient(): SecureHubClient {
+    getSecureClient(): SecureClient {
         if (!this.secureClient) {
             throw new Error("SecureClient not initialized. Call initialize() first.");
         }

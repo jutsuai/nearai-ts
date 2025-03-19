@@ -7,9 +7,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export class AgentEnv {
-    async runAgent(agent_ts_files_to_transpile: string[]): Promise<void> {
+    async loadAgent(agent_ts_files_to_transpile: string[]): Promise<void> {
         let agent_main_js_path = "";
 
+        // Transpile each agent file and write the output to disk
         for (const agent_ts_path of agent_ts_files_to_transpile) {
             const agent_js_code = this.transpileCode(agent_ts_path);
             const agent_js_filename = agent_ts_path

@@ -20,7 +20,9 @@ export async function runAgent(
     jsonString?: string,
     configPath?: string
 ): Promise<void> {
-    dotenv.config(); // Load any .env variables if they exist
+
+    // Load any .env variables if they exist
+    dotenv.config();
 
     if (!agentPath) {
         throw new Error("Missing agent path. Please specify the path to your .ts agent file.");
@@ -28,6 +30,7 @@ export async function runAgent(
 
     // If no jsonString was provided, attempt to load from a local config file
     if (!jsonString) {
+
         // Default to ~/.nearai/config.json if no custom path is given
         const defaultConfigPath = path.join(os.homedir(), ".nearai", "config.json");
         configPath = configPath || defaultConfigPath;

@@ -1,12 +1,12 @@
 import { configManager } from "../config/configManager.js";
-import type { SecureHubClient } from "../clients/secureClient.js";
+import type { SecureClient } from "../clients/secureClient.js";
 import { AgentEnv } from "./agentEnv.js";
 
 class GlobalEnvironment {
     private static instance: GlobalEnvironment | null = null;
-    private _client: SecureHubClient | null = null;
+    private _client: SecureClient | null = null;
     private _initialized = false;
-    public thread_id = "";
+    public thread_id: string = "";
 
     private constructor() {}
 
@@ -25,11 +25,11 @@ class GlobalEnvironment {
 
         const agentEnv = new AgentEnv();
         agentEnv
-            .runAgent(configManager.getConfig().agent_ts_files_to_transpile)
+            .loadAgent(configManager.getConfig().agent_ts_files_to_transpile)
             .catch((err: any) => console.error("Fatal error:", err));
     }
 
-    get client(): SecureHubClient {
+    get client(): SecureClient {
         if (!this._client) {
             throw new Error("Global Environment not initialized. Call initialize() first.");
         }

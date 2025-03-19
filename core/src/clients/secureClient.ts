@@ -12,7 +12,7 @@ type ChatCompletion = OpenAI.ChatCompletion;
 type Message = OpenAI.Beta.Threads.Messages.Message;
 type ChatCompletionTool = OpenAI.ChatCompletionTool;
 
-export interface SecureHubClient {
+export interface SecureClient {
     env_var(key: string): string | undefined;
 
     list_files_from_thread(

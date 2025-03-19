@@ -1,4 +1,4 @@
-import { env } from "ts-agent-runner";
+// import { env } from "ts-agent-runner";
 
 (async () => {
     try {
