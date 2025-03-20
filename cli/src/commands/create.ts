@@ -112,7 +112,7 @@ export const createCmd = new Command("create")
             Logger.success(`Project '${finalName}' created successfully!`);
 
             // Maybe guide user on next steps
-            Logger.info(`\nNext steps:\n  cd ${finalName}\n  nearai run\n`);
+            Logger.info(`\nNext steps:\n  cd ${finalName}\n  nearai-ts run\n`);
         } catch (err: any) {
             spinner.fail("Failed to create project!");
             Logger.error(err?.message || "Unknown error");

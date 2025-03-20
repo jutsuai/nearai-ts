@@ -22,7 +22,8 @@
     "dotenv": "^16.4.7",
     "node": "^20.19.0",
     "node-fetch": "^3.3.2",
-    "openai": "^4.88.0"
+    "openai": "^4.88.0",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "typescript": "^5.8.2"

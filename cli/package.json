@@ -6,7 +6,7 @@
   "author": "",
   "type": "module",
   "bin": {
-    "nearai-ts": "./dist/bin/nearai.js"
+    "nearai-ts": "./dist/bin/nearai-ts.js"
   },
   "scripts": {
     "build": "tsc && npm run copy-template",
@@ -22,5 +22,9 @@
     "openai": "^4.87.4",
     "ora": "^8.2.0",
     "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/prompts": "^2.4.9",
+    "typescript": "^5.8.2"
   }
 }

@@ -15,6 +15,9 @@ import AgentEnvironment from "../../core/dist/runner.js";
         // Call .chat(...) in-process
         const reply = await agent.chat(userInput);
 
+        // We can implement whatever logic we want in our agent file that supports the nearai-sdk
+        // ...
+
         // Print the result
         console.log("Agent output:", reply);
     } catch (error) {
