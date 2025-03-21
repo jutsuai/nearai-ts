@@ -2,7 +2,7 @@ import { Client } from './client.js';
 import { AgentConfig } from '../interfaces.js';
 
 export class Environment extends Client {
-    private localUserMessage?: string;
+    private localUserMessages: Array<{ role: 'user'; content: string }> = [];
 
     constructor(config: AgentConfig) {
         super(config);
@@ -16,18 +16,15 @@ export class Environment extends Client {
         return this.threadId;
     }
 
-    public setLocalUserMessage(message: string) {
-        this.localUserMessage = message;
+    public setLocalUserMessage(content: string) {
+        this.localUserMessages.push({ role: 'user', content });
     }
 
     public override async fetchLastMessage(role = 'user'): Promise<any | null> {
-        if (role === 'user' && this.localUserMessage) {
-            const msg = {
-                role: 'user',
-                content: this.localUserMessage
-            };
-            this.localUserMessage = undefined;
-            return msg;
+        // If you only want the very last user message:
+        if (role === 'user') {
+            const lastUser = this.localUserMessages[this.localUserMessages.length - 1];
+            return lastUser || null;
         }
         return super.fetchLastMessage(role);
     }
@@ -36,6 +33,10 @@ export class Environment extends Client {
         const message = await this.fetchLastMessage(role);
         if (!message) return '';
         return message.content ?? '';
+    }
+
+    public getAllLocalMessages() {
+        return this.localUserMessages;
     }
 }
 
