@@ -61,10 +61,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             console.log('Runner was called directly. Environment is initialized.');
             console.log(`Agent path loaded: ${process.argv[2]}`);
             console.log('If you wanted to run the agent right away, you could do so here.');
-            // For direct usage:
-            // if (typeof agentModule.default === 'function') {
-            //   await agentModule.default(agentConfig);
-            // }
         })
         .catch((err) => {
             console.error('Runner error:', err);
