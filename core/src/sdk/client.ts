@@ -120,24 +120,36 @@ export class Client {
     }
 
     public async generateCompletion(
-        messages: any[],
-        model = '',
+        messages: Array<{ role: "system"|"assistant"|"user"; content: string }>,
+        model = "llama-v3p1-70b-instruct",
         maxTokens = 4000,
         temperature = 0.7,
         tools?: any[],
         stream = false
     ): Promise<string | null> {
+        // Provide a valid fallback model
+        const finalModel = model.trim() || "llama-v3p1-70b-instruct";
+
+        // near.ai expects correct shape for each message
+        const validMessages = messages.map(m => ({
+            role: m.role,
+            content: m.content
+        }));
+
         const params = {
-            model,
-            messages,
+            model: finalModel,
+            messages: validMessages,
             temperature,
             max_tokens: maxTokens,
-            tools,
-            // stream, // ommitted for now
+            tools
+            // stream, // omitted if not supported
         };
+
+        // If near.ai doesn't recognize "tools", remove it
+        // delete params.tools;
+
         const response = await this.hubClient.chat.completions.create(params);
-        const content = response.choices?.[0]?.message?.content ?? null;
-        return content;
+        return response.choices?.[0]?.message?.content ?? null;
     }
 
     public async postAssistantReply(
