@@ -27,12 +27,19 @@ export class Client {
         order: 'asc' | 'desc' = 'asc'
     ): Promise<any[]> {
         const finalThreadId = threadId ?? this.threadId;
-        const response = await this.hubClient.beta.threads.messages.list(
-            finalThreadId,
-            { order, limit },
-            {}
-        );
-        return response.data;
+        try {
+            const response = await this.hubClient.beta.threads.messages.list(
+                finalThreadId,
+                { order, limit },
+                {}
+            );
+            return response.data;
+        } catch (error: any) {
+            if (error.status === 404) {
+                return [];
+            }
+            throw error;
+        }
     }
 
     public async fetchLastMessage(role = 'user'): Promise<any | null> {

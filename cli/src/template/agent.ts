@@ -1,24 +1,23 @@
-import AgentEnvironment from "../../core/dist/runner.js";
+import { env, AgentConfig } from "../../../core/dist/index.js";
 
-(async () => {
+export default async function runAgent(config: AgentConfig) {
     try {
-        // Gather user input from CLI args
-        const userInput = process.argv.slice(2).join(" ");
-        if (!userInput) {
-            console.log("No input provided to agent. Exiting.");
-            process.exit(0);
+        const lastMsg = await env().fetchLastMessageContent() || "";
+        if (!lastMsg.trim()) {
+            console.log("No user message provided; nothing to process.");
+            return;
         }
 
-        // Create environment
-        const agent = new AgentEnvironment("MyLocalAgent", "llama-v3p1-70b-instruct");
+        console.log("User input:", lastMsg);
 
-        // Call .chat(...) in-process
-        const reply = await agent.chat(userInput);
+        const reply = await env().generateCompletion([
+            { role: "system", content: "You are a helpful assistant." },
+            { role: "user",   content: lastMsg }
+        ]);
 
-        // Print the result
         console.log("Agent output:", reply);
+        return reply;
     } catch (error) {
         console.error("Agent error:", error);
-        process.exit(1);
     }
-})();
+}
