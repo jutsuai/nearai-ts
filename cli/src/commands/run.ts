@@ -6,14 +6,11 @@ import { promptYesNo, readMultiLineInput } from "../utils/input-handler.js";
 import { Boxer } from "../utils/boxer.js";
 import chalk from "chalk";
 import { NEARAI_COLORS } from "../utils/colors.js";
-
-// @TODO - Update so loads from the package ("nearai-ts") instead of local
-import { runner } from "../../../core/dist/runner.js";
-import { env } from "../../../core/dist/sdk/environment.js";
+import { env, runner } from "../../../core/dist/index.js";
 
 export const runCmd = new Command("run")
     .description("Run your NEARAI TypeScript agent in a multi-line interactive CLI")
-    .argument("[agentPath]", "Optional path to your agent .ts file")
+    .argument("[agentPath]", "Optional path to your agent .ts/.js file")
     .action(async (agentPath: string | undefined) => {
         Boxer.box(
             "Agent Runner",
@@ -45,15 +42,13 @@ export const runCmd = new Command("run")
 
         const spinner = startSpinner("Starting agent...");
         try {
-            await runAgentCore(finalAgentPath);
+            const { agentConfig, agentModule } = await callRunner(finalAgentPath);
             spinner.succeed("Agent ready!");
             Logger.success(`Agent '${finalAgentPath}' is running.\n`);
 
             Logger.info(
                 "Type multiple lines. Enter /done (or blank line) to send. Enter /exit to quit.\n"
             );
-
-            const agentModule = await importAgentModule(finalAgentPath);
 
             while (true) {
                 const userMessage = await readMultiLineInput();
@@ -67,12 +62,12 @@ export const runCmd = new Command("run")
 
                 let output: string | undefined;
                 if (typeof agentModule.default === "function") {
-                    output = await agentModule.default({});
+                    // Pass the same config, or pass nothing if the agent doesn't need it
+                    output = await agentModule.default(agentConfig);
                 } else if (typeof agentModule.Agent === "function") {
-                    output = await agentModule.Agent({});
+                    output = await agentModule.Agent(agentConfig);
                 }
                 thinking.succeed("Agent responded!");
-
                 Logger.info(
                     chalk.hex(NEARAI_COLORS["teal"])("\n[Agent Output]\n") +
                     chalk.hex(NEARAI_COLORS["white"])(output || "[No output]")
@@ -87,20 +82,16 @@ export const runCmd = new Command("run")
         }
     });
 
-async function runAgentCore(agentPath: string) {
+async function callRunner(agentPath: string) {
     const oldArgv = [...process.argv];
+    let result;
     try {
         process.argv[2] = agentPath;
         process.argv[3] = "";
-        await runner();
+        result = await runner();
     } finally {
         process.argv.length = 0;
         oldArgv.forEach((arg) => process.argv.push(arg));
     }
-}
-
-async function importAgentModule(agentPath: string) {
-    const { resolve } = await import("node:path");
-    const absoluteAgentPath = resolve(agentPath);
-    return await import(absoluteAgentPath);
+    return result;
 }

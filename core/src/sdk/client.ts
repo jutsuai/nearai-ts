@@ -14,7 +14,18 @@ export class Client {
         this.envVars = config.envVars;
         this.threadId = config.threadId ?? 'thread_local';
         this.baseUrl = config.baseUrl ?? 'https://api.near.ai/v1';
-        const userAuthString = config.auth ? JSON.stringify(config.auth) : '';
+
+        if (!config.auth) {
+            throw new Error('No auth provided in AgentConfig; near.ai requires an auth object.');
+        }
+
+        const userAuthString = JSON.stringify(config.auth);
+        if (userAuthString === '{}') {
+            throw new Error(
+                'Invalid auth object. Make sure ~/.nearai/config.json has { "auth": { ... } } with all required keys.'
+            );
+        }
+
         this.hubClient = new OpenAI({
             baseURL: this.baseUrl,
             apiKey: userAuthString
