@@ -2,6 +2,12 @@
   "name": "nearai-ts-core",
   "version": "1.0.0",
   "description": "NEAR AI TypeScript Core SDK",
+  "keywords": [
+    "nearai",
+    "sdk",
+    "typescript"
+  ],
+  "author": "Wil Neeley <wil@atypic.ai>",
   "license": "ISC",
   "type": "module",
   "main": "dist/index.js",
@@ -21,17 +27,6 @@
     "@types/node": "^22.13.10",
     "dotenv": "^16.4.7",
     "node": "^20.19.0",
-    "node-fetch": "^3.3.2",
-    "openai": "^4.88.0",
-    "ts-node": "^10.9.2"
-  },
-  "devDependencies": {
-    "typescript": "^5.8.2"
-  },
-  "keywords": [
-    "nearai",
-    "sdk",
-    "typescript"
-  ],
-  "author": ""
+    "openai": "^4.88.0"
+  }
 }

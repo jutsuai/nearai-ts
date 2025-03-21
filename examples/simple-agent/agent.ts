@@ -1,36 +1,22 @@
-// @TODO - Import from new SDK package ("core") when available
-import { env } from "ts-agent-runner";
+import { env } from 'ts-agent-runner';
 
-(async () => {
+export default async function (config: AgentConfig) {
     try {
-        let user_message = await env.get_last_message_content();
+        const lastMsg = await env.fetchLastMessageContent();
+        console.log("User input:", lastMessage);
 
-        console.log("User input:", user_message);
-
-        const messages: any = [
-            {
-                role: "system",
-                content: "You are a smart assistent.",
-            },
-            {
-                role: "user",
-                content: user_message,
-            },
-        ];
-
-        // inference
-        const reply = await env.completion(
-            messages,
-            "llama-v3p1-70b-instruct",
-            4000,
-            0.5
-        );
-        if (env.get_thread_id() !== "thread_local") {
-            await env.add_reply(reply);
-        }
-
-        console.log("Agent output:", reply);
+        // const messages = [
+        //     { role: "system", content: "You are a smart assistant." },
+        //     { role: "user",   content: userMessage },
+        // ];
+        //
+        // const reply = await someSDKOrEnv.completion(messages, /* model */ "llama-v3p1-70b-instruct");
+        // if (config.threadId !== "thread_local") {
+        //     await someSDKOrEnv.addReply(reply);
+        // }
+        //
+        // console.log("Agent output:", reply);
     } catch (error) {
         console.error("Agent error:", error);
     }
-})();
+}
