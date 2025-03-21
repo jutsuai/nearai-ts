@@ -1,4 +1,5 @@
-import OpenAI from 'openai';
+import OpenAI, { toFile } from 'openai';
+import { FileObject } from 'openai/resources/files';
 import { AgentConfig } from '../interfaces.js';
 
 export class Client {
@@ -25,15 +26,29 @@ export class Client {
         limit?: number,
         order: 'asc' | 'desc' = 'asc'
     ): Promise<any[]> {
-        throw new Error('Not implemented');
+        const finalThreadId = threadId ?? this.threadId;
+        const response = await this.hubClient.beta.threads.messages.list(
+            finalThreadId,
+            { order, limit },
+            {}
+        );
+        return response.data;
     }
 
     public async fetchLastMessage(role = 'user'): Promise<any | null> {
-        throw new Error('Not implemented');
+        const messages = await this.listMessages();
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i]?.role === role) {
+                return messages[i];
+            }
+        }
+        return null;
     }
 
     public async fetchLastMessageContent(role = 'user'): Promise<string> {
-        throw new Error('Not implemented');
+        const message = await this.fetchLastMessage(role);
+        if (!message) return '';
+        return message.content ?? '';
     }
 
     public async writeFile(
@@ -42,12 +57,48 @@ export class Client {
         encoding = 'utf-8',
         fileType = 'text/plain',
         writeToDisk = true
-    ): Promise<any> {
-        throw new Error('Not implemented');
+    ): Promise<FileObject> {
+        const buffer = Buffer.from(content);
+        const fileObj = await toFile(buffer, filename);
+        return this.hubClient.files.create({ file: fileObj, purpose: 'assistants' });
     }
 
     public async readFile(filename: string): Promise<string> {
-        throw new Error('Not implemented');
+        const files = await this.listFilesFromThread('asc');
+        const match = files.find((f: any) => f.filename === filename);
+        if (!match) {
+            throw new Error(`File not found: ${filename}`);
+        }
+        const content = await this.readFileById(match.id);
+        return content;
+    }
+
+    public async uploadFile(
+        fileContent: string,
+        purpose: any,
+        encoding = 'utf-8',
+        fileName = 'file.txt',
+        fileType = 'text/plain'
+    ): Promise<FileObject> {
+        const blob = new Blob([fileContent], { type: fileType });
+        const file = new File([blob], fileName, { type: fileType, lastModified: Date.now() });
+        return this.hubClient.files.create({ file, purpose });
+    }
+
+    private async listFilesFromThread(
+        order: 'asc' | 'desc' = 'asc'
+    ): Promise<any[]> {
+        const messages = await this.listMessages(undefined, undefined, order);
+        const attachments = messages.flatMap((m: any) => m.attachments ?? []);
+        const fileIds = attachments.map((a: any) => a.file_id).filter(Boolean);
+        const filePromises = fileIds.map((id: string) => this.hubClient.files.retrieve(id));
+        const files = await Promise.all(filePromises);
+        return files.filter((f) => f !== null);
+    }
+
+    private async readFileById(fileId: string): Promise<string> {
+        const content = await this.hubClient.files.content(fileId);
+        return await content.text();
     }
 
     public async generateCompletion(
@@ -55,20 +106,32 @@ export class Client {
         model = '',
         maxTokens = 4000,
         temperature = 0.7,
-        tools?: any[]
+        tools?: any[],
+        stream = false
     ): Promise<string | null> {
-        throw new Error('Not implemented');
+        const params = {
+            model,
+            messages,
+            temperature,
+            max_tokens: maxTokens,
+            tools,
+            // stream, // ommitted for now
+        };
+        const response = await this.hubClient.chat.completions.create(params);
+        const content = response.choices?.[0]?.message?.content ?? null;
+        return content;
     }
 
     public async postAssistantReply(
         message: string | null,
         messageType = ''
     ): Promise<any> {
-        throw new Error('Not implemented');
-    }
-
-    public getEnvVar(key: string): string | undefined {
-        throw new Error('Not implemented');
+        const body = {
+            role: 'assistant',
+            content: message ?? '',
+            metadata: messageType ? { message_type: messageType } : undefined
+        } as any;
+        return this.hubClient.beta.threads.messages.create(this.threadId, body);
     }
 
     public async queryVectorStore(
@@ -76,14 +139,39 @@ export class Client {
         query: string,
         fullFiles = false
     ): Promise<any> {
-        throw new Error('Not implemented');
+        const data = JSON.stringify({ query, full_files: fullFiles });
+        const endpoint = `${this.baseUrl}/vector_stores/${vectorStoreId}/search`;
+        const headers = {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.hubClient.apiKey}`
+        };
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers,
+            body: data
+        });
+        if (!response.ok) {
+            throw new Error(`Error querying vector store: ${response.status} ${response.statusText}`);
+        }
+        return response.json();
     }
 
     public async addFileToVectorStore(
         vectorStoreId: string,
         fileId: string
     ): Promise<any> {
-        throw new Error('Not implemented');
+        const endpoint = `${this.baseUrl}/vector_stores/${vectorStoreId}/files`;
+        const headers = {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.hubClient.apiKey}`
+        };
+        const body = JSON.stringify({ file_id: fileId });
+
+        const response = await fetch(endpoint, { method: 'POST', headers, body });
+        if (!response.ok) {
+            throw new Error(`Failed to add file to vector store: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
     }
 
     public async createVectorStore(
@@ -93,20 +181,23 @@ export class Client {
         chunkingStrategy: any,
         metadata: unknown | null = null
     ): Promise<any | null> {
-        throw new Error('Not implemented');
-    }
+        const endpoint = `${this.baseUrl}/vector_stores`;
+        const headers = {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.hubClient.apiKey}`
+        };
+        const body = JSON.stringify({
+            name,
+            file_ids: fileIds,
+            expires_after: expiresAfter,
+            chunking_strategy: chunkingStrategy,
+            metadata
+        });
 
-    public async uploadFile(
-        fileContent: string,
-        purpose: any,
-        encoding = 'utf-8',
-        fileName = 'file.txt',
-        fileType = 'text/plain'
-    ): Promise<any> {
-        throw new Error('Not implemented');
-    }
-
-    public getThreadId(): string {
-        throw new Error('Not implemented');
+        const response = await fetch(endpoint, { method: 'POST', headers, body });
+        if (!response.ok) {
+            throw new Error(`Failed to create vector store: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
     }
 }

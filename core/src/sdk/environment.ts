@@ -5,6 +5,14 @@ export class Environment extends Client {
     constructor(config: AgentConfig) {
         super(config);
     }
+
+    public getEnvVar(key: string): string | undefined {
+        return this.envVars?.[key];
+    }
+
+    public getThreadId(): string {
+        return this.threadId;
+    }
 }
 
 let _env: Environment | null = null;
