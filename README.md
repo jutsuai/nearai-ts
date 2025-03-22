@@ -36,3 +36,11 @@ nearai-ts help
 ```bash
 npm login
 ```
+
+2. Select which package to publish
+
+```bash
+npm run publish:cli
+npm run publish:core
+```
+
