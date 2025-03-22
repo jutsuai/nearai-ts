@@ -7,7 +7,7 @@
   "license": "ISC",
   "type": "module",
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,6 +24,7 @@
     "test": "echo \"No tests yet\""
   },
   "dependencies": {
+    "@jutsuai/nearai-ts-core": "^0.1.0",
     "boxen": "^8.0.1",
     "chalk": "^5.4.1",
     "commander": "^10.0.0",

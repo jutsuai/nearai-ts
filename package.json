@@ -5,7 +5,6 @@
   "keywords": [],
   "author": "Wil Neeley <wil@jutsu.ai>",
   "license": "ISC",
-  "private": true,
   "type": "module",
   "workspaces": [
     "packages/*"
@@ -14,7 +13,7 @@
     "build": "npm run build -w @jutsuai/nearai-ts-core && npm run build -w @jutsuai/nearai-ts-cli",
     "link:cli": "npm link --workspace @jutsuai/nearai-ts-cli",
     "setup": "npm run build && npm link --force --workspace @jutsuai/nearai-ts-cli",
-    "publish:cli": "npm publish --workspace @jutsuai/packages/cli",
-    "publish:core": "npm publish --workspace @jutsuai/packages/core"
+    "publish:cli": "npm publish --workspace @jutsuai/nearai-ts-cli --access public",
+    "publish:core": "npm publish --workspace @jutsuai/nearai-ts-core --access public"
   }
 }

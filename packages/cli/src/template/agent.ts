@@ -1,4 +1,4 @@
-import { env, AgentConfig } from "../../../core/dist/index.js";
+import { env, AgentConfig } from "@jutsuai/nearai-ts-core";
 
 export default async function runAgent(config: AgentConfig) {
     try {

@@ -6,7 +6,7 @@ import { promptYesNo, readMultiLineInput } from "../utils/input-handler.js";
 import { Boxer } from "../utils/boxer.js";
 import chalk from "chalk";
 import { NEARAI_COLORS } from "../utils/colors.js";
-import { env, runner } from "../../../core/dist/index.js";
+import { env, runner } from "@jutsuai/nearai-ts-core";
 
 export const runCmd = new Command("run")
     .description("Run your NEARAI TypeScript agent in a multi-line interactive CLI")
