@@ -9,6 +9,11 @@
   "publishConfig": {
     "access": "restricted"
   },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "bin": {
     "nearai-ts": "./dist/bin/nearai-ts.js"
   },
