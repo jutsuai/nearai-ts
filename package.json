@@ -1,0 +1,20 @@
+{
+  "name": "nearai-ts",
+  "version": "0.1.0",
+  "description": "NEARAI TypeScript",
+  "keywords": [],
+  "author": "Wil Neeley <wil@jutsu.ai>",
+  "license": "ISC",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @jutsu/nearai-ts-core && npm run build -w @jutsu/nearai-ts-cli",
+    "link:cli": "npm link --workspace @jutsu/nearai-ts-cli",
+    "setup": "npm run build && npm link --force --workspace @jutsu/nearai-ts-cli",
+    "publish:cli": "npm publish --workspace @jutsu/packages/cli",
+    "publish:core": "npm publish --workspace @jutsu/packages/core"
+  }
+}

@@ -1,10 +1,14 @@
 {
-  "name": "nearai-ts-cli",
+  "name": "@jutsu/nearai-ts-cli",
   "version": "0.1.0",
-  "description": "NEAR AI TypeScript CLI",
+  "description": "NEARAI TypeScript CLI",
   "keywords": [],
-  "author": "",
+  "author": "Wil Neeley <wil@jutsu.ai>",
+  "license": "ISC",
   "type": "module",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "bin": {
     "nearai-ts": "./dist/bin/nearai-ts.js"
   },

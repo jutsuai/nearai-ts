@@ -1,15 +1,14 @@
 {
-  "name": "nearai-ts-core",
-  "version": "1.0.0",
-  "description": "NEAR AI TypeScript Core SDK",
-  "keywords": [
-    "nearai",
-    "sdk",
-    "typescript"
-  ],
-  "author": "Wil Neeley <wil@atypic.ai>",
+  "name": "@jutsu/nearai-ts-core",
+  "version": "0.1.0",
+  "description": "NEARAI TypeScript Core (SDK)",
+  "keywords": [],
+  "author": "Wil Neeley <wil@jutsu.ai>",
   "license": "ISC",
   "type": "module",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
