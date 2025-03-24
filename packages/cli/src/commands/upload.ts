@@ -27,7 +27,7 @@ export const uploadCmd = new Command("upload")
                 type: "text",
                 name: "value",
                 message: "Enter the path to your agent's directory:",
-                initial: "./dist/template",
+                initial: "./packages/cli/dist/template",
             });
             finalAgentPath = response.value;
         }
@@ -36,7 +36,6 @@ export const uploadCmd = new Command("upload")
 
         const metadataPath = path.join(finalAgentPath, "metadata.json");
         let metadata: any;
-
         try {
             const raw = await fs.readFile(metadataPath, "utf-8");
             metadata = JSON.parse(raw);
@@ -82,9 +81,9 @@ export const uploadCmd = new Command("upload")
             const { name, version, ...entryMetadata } = metadata;
             await registry.updateMetadata(entryLocation, entryMetadata);
 
+            // Ignore files listed in .gitignore
             const gitignorePath = path.join(finalAgentPath, ".gitignore");
             let ig = ignore();
-
             try {
                 const ignoreExists = !!(await fs.stat(gitignorePath).catch(() => null));
                 if (ignoreExists) {

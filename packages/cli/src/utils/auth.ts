@@ -24,10 +24,7 @@ export function getAuth(): { token: string; namespace: string } {
         throw new Error("Missing required fields in config.auth (need account_id and signature).");
     }
 
-    return {
-        namespace: auth.account_id,
-        token: auth.signature,
-    };
+    return auth;
 }
 
 export function getAuthNamespace(): string | null {
