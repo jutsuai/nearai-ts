@@ -1,17 +1,10 @@
-/**
- * index.ts
- * Sets up Commander.js, registers commands, and parses user input.
- */
-
 import { Command } from "commander";
 import { loadBanner } from "./utils/banner.js";
-
-// Import your commands
 import { createCmd } from "./commands/create.js";
 import { runCmd } from "./commands/run.js";
-// import { deployCmd } from "./commands/deploy";
-// import { loginCmd } from "./commands/login";
-// import { configCmd } from "./commands/config";
+import { uploadCmd } from "./commands/upload.js";
+// import { loginCmd } from "./commands/login.js";
+// import { configCmd } from "./commands/config.js";
 import { helpCmd } from "./commands/help.js";
 
 export async function main(): Promise<void> {
@@ -29,7 +22,7 @@ export async function main(): Promise<void> {
     // Register subcommands
     program.addCommand(createCmd);
     program.addCommand(runCmd);
-    // program.addCommand(deployCmd);
+    program.addCommand(uploadCmd);
     // program.addCommand(loginCmd);
     // program.addCommand(configCmd);
     program.addCommand(helpCmd);
