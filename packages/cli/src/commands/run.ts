@@ -46,8 +46,7 @@ export const runCmd = new Command("run")
                     type: "text",
                     name: "value",
                     message: "Enter the path to your agent file:",
-                    // initial: "agent.ts"
-                    initial: "dist/template/agent.js"
+                    initial: "agent.ts"
                 });
 
                 if (!manualPath || !fs.existsSync(manualPath)) {
