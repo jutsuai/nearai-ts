@@ -7,6 +7,9 @@ import { Boxer } from "../utils/boxer.js";
 import chalk from "chalk";
 import { NEARAI_COLORS } from "../utils/colors.js";
 import { env, runner } from "@jutsuai/nearai-ts-core";
+import { globby } from "globby";
+import fs from "fs";
+import path from "path";
 
 export const runCmd = new Command("run")
     .description("Run your NEARAI TypeScript agent in a multi-line interactive CLI")
@@ -19,33 +22,45 @@ export const runCmd = new Command("run")
             "teal"
         );
 
-        let finalAgentPath = agentPath || "";
+        let finalAgentPath: any = agentPath;
+
         if (!finalAgentPath) {
-            const response = await prompts({
-                type: "text",
-                name: "value",
-                message: "Enter the path to your agent file:",
-                initial: "./dist/template/agent.js",
-            });
-            finalAgentPath = response.value;
+            const matches = await globby(
+                ["agent.{ts,js}", "**/agents/agent.{ts,js}"],
+                { gitignore: true, absolute: true }
+            );
+
+            if (matches.length > 0) {
+                const { value: selectedPath } = await prompts({
+                    type: "select",
+                    name: "value",
+                    message: "Select an agent to run:",
+                    choices: matches.map(file => ({
+                        title: path.relative(process.cwd(), file),
+                        value: file
+                    })),
+                });
+                finalAgentPath = selectedPath;
+            } else {
+                const { value: manualPath } = await prompts({
+                    type: "text",
+                    name: "value",
+                    message: "Enter the path to your agent file:",
+                    // initial: "agent.ts"
+                    initial: "dist/template/agent.js"
+                });
+
+                if (!manualPath || !fs.existsSync(manualPath)) {
+                    Logger.error(`Agent file '${manualPath}' not found.`);
+                    process.exit(1);
+                }
+
+                finalAgentPath = manualPath;
+            }
         }
 
-        Logger.info(`Preparing to run agent at: ${finalAgentPath}`);
-
-        const confirm = await promptYesNo(
-            `Do you want to run the agent located at '${finalAgentPath}'?`
-        );
-        if (!confirm) {
-            Logger.warn("Agent run canceled by user.");
-            return;
-        }
-
-        const spinner = startSpinner("Starting agent...");
         try {
             const { agentConfig, agentModule } = await callRunner(finalAgentPath);
-            spinner.succeed("Agent ready!");
-            Logger.success(`Agent '${finalAgentPath}' is running.\n`);
-
             Logger.info(
                 "Type multiple lines. Enter /done (or blank line) to send. Enter /exit to quit.\n"
             );
@@ -57,26 +72,24 @@ export const runCmd = new Command("run")
                     break;
                 }
 
-                const thinking = startSpinner("Agent is thinking...");
+                const thinking = startSpinner("");
                 env().setLocalUserMessage(userMessage);
 
                 let output: string | undefined;
                 if (typeof agentModule.default === "function") {
-                    // Pass the same config, or pass nothing if the agent doesn't need it
                     output = await agentModule.default(agentConfig);
                 } else if (typeof agentModule.Agent === "function") {
                     output = await agentModule.Agent(agentConfig);
                 }
-                thinking.succeed("Agent responded!");
-                Logger.info(
-                    chalk.hex(NEARAI_COLORS["teal"])("\n[Agent Output]\n") +
-                    chalk.hex(NEARAI_COLORS["white"])(output || "[No output]")
+
+                thinking.stop()
+                Logger.bot(
+                    chalk.hex(NEARAI_COLORS["yellow"])((output || "[No output]") + "\n")
                 );
             }
 
             Logger.info("Session ended. Goodbye!");
         } catch (err: any) {
-            spinner.fail("Failed to run agent!");
             Logger.error(err?.message || "Unknown error");
             process.exit(1);
         }
@@ -91,7 +104,7 @@ async function callRunner(agentPath: string) {
         result = await runner();
     } finally {
         process.argv.length = 0;
-        oldArgv.forEach((arg) => process.argv.push(arg));
+        oldArgv.forEach(arg => process.argv.push(arg));
     }
     return result;
 }

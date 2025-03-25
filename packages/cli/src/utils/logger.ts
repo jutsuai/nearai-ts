@@ -16,4 +16,8 @@ export class Logger {
     static error(message: string) {
         console.error(chalk.red("[✗]"), message);
     }
+
+    static bot(message: string) {
+        console.log("🤖", message);
+    }
 }
