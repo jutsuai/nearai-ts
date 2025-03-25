@@ -15,7 +15,7 @@ npm install -g @jutsuai/nearai-ts-cli
 ```bash
 nearai-ts login
 ```
-> ⚠️ **Note:** You only need to do this once. If you have already authenticated with `nearai` disregard this step.
+> ⚠️ **Note:** You only need to do this once. If you have already authenticated before you can skip this step.
 
 ### 3. Create a new project:
 
