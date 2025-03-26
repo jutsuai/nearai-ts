@@ -2,13 +2,14 @@ import { Command } from "commander";
 import prompts from "prompts";
 import { Logger } from "../utils/logger.js";
 import { startSpinner } from "../utils/spinner.js";
-import { promptYesNo, readMultiLineInput } from "../utils/input-handler.js";
+import { readMultiLineInput } from "../utils/input-handler.js";
 import { Boxer } from "../utils/boxer.js";
 import chalk from "chalk";
 import { NEARAI_COLORS } from "../utils/colors.js";
 import { env, runner } from "@jutsuai/nearai-ts-core";
 import { globby } from "globby";
 import fs from "fs";
+import { mkdirSync } from "fs";
 import path from "path";
 import { build } from "esbuild";
 
@@ -62,6 +63,7 @@ export const runCmd = new Command("run")
         // Transpile agent.ts to agent.js if needed
         if (finalAgentPath.endsWith(".ts")) {
             const agentJsPath = finalAgentPath.replace(/\.ts$/, ".js");
+            mkdirSync(path.dirname(agentJsPath), { recursive: true });
             if (!fs.existsSync(agentJsPath)) {
                 Logger.info(`Transpiling ${finalAgentPath} to ${agentJsPath}...`);
                 try {
@@ -74,6 +76,10 @@ export const runCmd = new Command("run")
                         sourcemap: false,
                         logLevel: "error"
                     });
+                    if (!fs.existsSync(agentJsPath)) {
+                        Logger.error(`Expected ${agentJsPath} to exist, but it was not created.`);
+                        process.exit(1);
+                    }
                     Logger.success(`Transpiled to ${agentJsPath}`);
                 } catch (err: any) {
                     Logger.error(`Transpile failed: ${err.message}`);
@@ -102,7 +108,7 @@ export const runCmd = new Command("run")
 
                 let output: string | undefined;
                 if (typeof agentModule.default === "function") {
-                    output = await agentModule.default(agentConfig);
+                    output = await agentModule.default({ ...agentConfig, env: env() });
                 } else if (typeof agentModule.Agent === "function") {
                     output = await agentModule.Agent(agentConfig);
                 }
