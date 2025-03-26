@@ -10,6 +10,7 @@ import { env, runner } from "@jutsuai/nearai-ts-core";
 import { globby } from "globby";
 import fs from "fs";
 import path from "path";
+import { build } from "esbuild";
 
 export const runCmd = new Command("run")
     .description("Run your NEARAI TypeScript agent in a multi-line interactive CLI")
@@ -58,6 +59,31 @@ export const runCmd = new Command("run")
             }
         }
 
+        // Transpile agent.ts to agent.js if needed
+        if (finalAgentPath.endsWith(".ts")) {
+            const agentJsPath = finalAgentPath.replace(/\.ts$/, ".js");
+            if (!fs.existsSync(agentJsPath)) {
+                Logger.info(`Transpiling ${finalAgentPath} to ${agentJsPath}...`);
+                try {
+                    await build({
+                        entryPoints: [finalAgentPath],
+                        outfile: agentJsPath,
+                        bundle: false,
+                        format: "esm",
+                        platform: "node",
+                        sourcemap: false,
+                        logLevel: "error"
+                    });
+                    Logger.success(`Transpiled to ${agentJsPath}`);
+                } catch (err: any) {
+                    Logger.error(`Transpile failed: ${err.message}`);
+                    process.exit(1);
+                }
+            }
+            finalAgentPath = agentJsPath;
+        }
+
+        // Load the runner module and run the agent
         try {
             const { agentConfig, agentModule } = await callRunner(finalAgentPath);
             Logger.info(
