@@ -1,6 +1,6 @@
 {
   "name": "@jutsuai/nearai-ts-cli",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "NEARAI TypeScript CLI",
   "keywords": [],
   "author": "Wil Neeley <wil@jutsu.ai>",
@@ -39,6 +39,7 @@
     "open": "^10.1.0",
     "openai": "^4.87.4",
     "ora": "^8.2.0",
+    "os": "^0.1.2",
     "prompts": "^2.4.2",
     "uuid": "^11.1.0"
   }

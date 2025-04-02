@@ -65,41 +65,28 @@ export const createCmd = new Command("create")
         // Show spinner
         const spinner = startSpinner("Scaffolding new project...");
         try {
-            // Create the new folder in the current working directory
-            const newProjectPath = path.join(process.cwd(), finalName);
-            await fs.mkdir(newProjectPath, { recursive: true });
+            const VERSION = "0.0.1";
 
-            // Copy agent.ts from template
-            const agentTsSource = await fs.readFile(
-                path.join(TEMPLATE_DIR, "agent.ts"),
-                "utf-8"
-            );
-            await fs.writeFile(
-                path.join(newProjectPath, "agent.ts"),
-                agentTsSource,
-                "utf-8"
-            );
+            // Root and versioned paths
+            const projectRoot = path.join(process.cwd(), finalName);
+            const versionPath = path.join(projectRoot, VERSION);
 
-            // Copy metadata.json, override the "name" field
-            const metadataSource = await fs.readFile(
-                path.join(TEMPLATE_DIR, "metadata.json"),
-                "utf-8"
-            );
+            // Create both directories
+            await fs.mkdir(versionPath, { recursive: true });
+
+            // Copy agent.ts
+            const agentTsSource = await fs.readFile(path.join(TEMPLATE_DIR, "agent.ts"), "utf-8");
+            await fs.writeFile(path.join(versionPath, "agent.ts"), agentTsSource, "utf-8");
+
+            // Copy and update metadata.json
+            const metadataSource = await fs.readFile(path.join(TEMPLATE_DIR, "metadata.json"), "utf-8");
             const metadataObj = JSON.parse(metadataSource);
             metadataObj.name = finalName;
-
-            // @TODO
-            // Update script with further functionality, e.g. set "description" or "tags"
-            // metadataObj.description = "A brand new TypeScript agent for NEAR AI!";
-
+            metadataObj.version = VERSION;
             const updatedMetadata = JSON.stringify(metadataObj, null, 2);
-            await fs.writeFile(
-                path.join(newProjectPath, "metadata.json"),
-                updatedMetadata,
-                "utf-8"
-            );
+            await fs.writeFile(path.join(versionPath, "metadata.json"), updatedMetadata, "utf-8");
 
-            // 8) Mark spinner as succeed
+            // Mark spinner as succeed
             spinner.succeed("Done scaffolding!");
             Logger.success(`Project '${finalName}' created successfully!`);
 
