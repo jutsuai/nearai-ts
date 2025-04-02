@@ -12,14 +12,22 @@ import { startSpinner } from "../utils/spinner.js";
 import { promptYesNo } from "../utils/input-handler.js";
 import { Boxer } from "../utils/boxer.js";
 import { NEARAI_COLORS } from "../utils/colors.js";
-import { registry } from "../utils/registry.js";
+import Registry from "../utils/registry.js";
 import { getAuthNamespace } from "../utils/auth.js";
 
 export const uploadCmd = new Command("upload")
     .description("Upload your NEARAI TypeScript agent to NEAR AI's registry")
     .argument("[agentPath]", "Path to the agent directory (defaults to current directory).")
+    .option("--bump", "Auto-increment patch version if it already exists")
+    .option("--minor-bump", "Auto-increment minor version")
+    .option("--major-bump", "Auto-increment major version")
     .option("--local", "Copy the agent locally instead of uploading to NEAR AI")
-    .action(async (rawAgentPath: string | undefined, opts: { local?: boolean }) => {
+    .action(async (rawAgentPath: string | undefined, opts: {
+        local?: boolean,
+        bump?: boolean,
+        minorBump?: boolean,
+        majorBump?: boolean,
+    }) => {
         let finalAgentPath = rawAgentPath || "";
         if (!finalAgentPath) {
             const response = await prompts({
@@ -81,6 +89,7 @@ export const uploadCmd = new Command("upload")
             "blue"
         );
 
+        // Confirm upload
         const proceed = await promptYesNo("Would you like to proceed with the upload?");
         if (!proceed) {
             Logger.warn("Upload canceled by user.");
@@ -94,7 +103,25 @@ export const uploadCmd = new Command("upload")
                 name: metadata.name,
                 version: metadata.version,
             };
+            const registry = new Registry({ local: opts.local });
 
+            // Check if the agent already exists and if a bump is requested
+            const versionAlreadyExists = await registry.versionExists(namespace, metadata.name, metadata.version);
+            const bumpRequested = opts.bump || opts.minorBump || opts.majorBump;
+
+            if (versionAlreadyExists && bumpRequested) {
+                const oldVersion = metadata.version;
+                const bumpType = opts.majorBump ? "major" : opts.minorBump ? "minor" : "patch";
+                metadata.version = registry.bumpVersion(oldVersion, bumpType);
+
+                Logger.info(`Bumped version: ${oldVersion} → ${metadata.version}`);
+                await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), "utf-8");
+            } else if (versionAlreadyExists && !bumpRequested) {
+                Logger.error(`Version ${metadata.version} already exists. Use --bump/--minor-bump/--major-bump`);
+                process.exit(1);
+            }
+
+            // Update metadata
             const { name, version, ...entryMetadata } = metadata;
             await registry.updateMetadata(entryLocation, entryMetadata);
 
@@ -130,7 +157,8 @@ export const uploadCmd = new Command("upload")
             });
 
             if (opts.local) {
-                const destPath = path.join(os.homedir(), ".nearai", "registry", namespace, metadata.name);
+                const destPath = path.join(os.homedir(), ".nearai", "registry", namespace, metadata.name, metadata.version);
+
                 for (const relPath of filteredFiles) {
                     const src = path.join(finalAgentPath, relPath);
                     const dest = path.join(destPath, relPath);

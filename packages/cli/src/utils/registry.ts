@@ -2,20 +2,31 @@ import fetch from "node-fetch";
 import FormData from "form-data";
 import { getAuth } from "./auth.js";
 
-const BASE_URL = "https://api.near.ai/v1";
+interface EntryLocation {
+    namespace: string;
+    name: string;
+    version: string;
+}
 
-export const registry = {
-    updateMetadata: async (
-        location: { namespace: string; name: string; version: string },
-        metadata: Record<string, any>
-    ): Promise<void> => {
+type BumpType = "patch" | "minor" | "major";
+
+export default class Registry {
+    private baseUrl: string;
+
+    constructor(opts: { local?: boolean } = {}) {
+        this.baseUrl = opts.local
+            ? "http://localhost:8081/v1"
+            : "https://api.near.ai/v1";
+    }
+
+    async updateMetadata(location: EntryLocation, metadata: Record<string, any>): Promise<void> {
         const auth = getAuth();
         const body = {
             entry_location: location,
-            metadata: metadata,
+            metadata,
         };
 
-        const res = await fetch(`${BASE_URL}/registry/upload_metadata`, {
+        const res = await fetch(`${this.baseUrl}/registry/upload_metadata`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -36,13 +47,9 @@ export const registry = {
                 `Failed to upload metadata: ${res.status} ${res.statusText} - ${errText}`
             );
         }
-    },
+    }
 
-    uploadFile: async (
-        location: { namespace: string; name: string; version: string },
-        relativePath: string,
-        fileBuffer: Buffer
-    ): Promise<void> => {
+    async uploadFile(location: EntryLocation, relativePath: string, fileBuffer: Buffer): Promise<void> {
         const auth = getAuth();
 
         const form = new FormData();
@@ -52,7 +59,7 @@ export const registry = {
         form.append("name", location.name);
         form.append("version", location.version);
 
-        const res = await fetch(`${BASE_URL}/registry/upload_file`, {
+        const res = await fetch(`${this.baseUrl}/registry/upload_file`, {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${JSON.stringify(auth)}`,
@@ -66,5 +73,51 @@ export const registry = {
                 `Failed to upload file '${relativePath}': ${res.status} ${res.statusText} - ${errText}`
             );
         }
-    },
-};
+    }
+
+    async versionExists(namespace: string, name: string, version: string): Promise<boolean> {
+        const auth = getAuth();
+        const body = {
+            entry_location: {
+                namespace,
+                name,
+                version
+            }
+        };
+
+        const res = await fetch(`${this.baseUrl}/registry/download_metadata`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${JSON.stringify(auth)}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        console.log('CHECK RESPONSE:', res.status, res.statusText);
+
+        return res.ok;
+    }
+
+    bumpVersion(version: string, type: BumpType): string {
+        const parts = version.split(".").map(Number);
+        if (parts.length !== 3) throw new Error("Invalid semver");
+
+        switch (type) {
+            case "patch":
+                parts[2]++;
+                break;
+            case "minor":
+                parts[1]++;
+                parts[2] = 0;
+                break;
+            case "major":
+                parts[0]++;
+                parts[1] = 0;
+                parts[2] = 0;
+                break;
+        }
+
+        return parts.join(".");
+    }
+}
