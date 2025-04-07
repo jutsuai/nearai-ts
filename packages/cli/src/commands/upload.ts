@@ -106,87 +106,87 @@ export const uploadCmd = new Command("upload")
             const registry = new Registry({ local: opts.local });
 
             // Check if the agent already exists and if a bump is requested
-            // const versionAlreadyExists = await registry.versionExists(namespace, metadata.name, metadata.version);
-            // const bumpRequested = opts.bump || opts.minorBump || opts.majorBump;
-            //
-            // if (versionAlreadyExists && bumpRequested) {
-            //     const oldVersion = metadata.version;
-            //     const bumpType = opts.majorBump ? "major" : opts.minorBump ? "minor" : "patch";
-            //     metadata.version = registry.bumpVersion(oldVersion, bumpType);
-            //
-            //     Logger.info(`Bumped version: ${oldVersion} → ${metadata.version}`);
-            //     await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), "utf-8");
-            // } else if (versionAlreadyExists && !bumpRequested) {
-            //     Logger.error(`Version ${metadata.version} already exists. Use --bump/--minor-bump/--major-bump`);
-            //     process.exit(1);
-            // }
+            const versionAlreadyExists = await registry.versionExists(namespace, metadata.name, metadata.version);
+            const bumpRequested = opts.bump || opts.minorBump || opts.majorBump;
+
+            if (versionAlreadyExists && bumpRequested) {
+                const oldVersion = metadata.version;
+                const bumpType = opts.majorBump ? "major" : opts.minorBump ? "minor" : "patch";
+                metadata.version = registry.bumpVersion(oldVersion, bumpType);
+
+                Logger.info(`Bumped version: ${oldVersion} → ${metadata.version}`);
+                await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), "utf-8");
+            } else if (versionAlreadyExists && !bumpRequested) {
+                Logger.error(`Version ${metadata.version} already exists. Use --bump/--minor-bump/--major-bump`);
+                process.exit(1);
+            }
 
             // Update metadata
             const { name, version, ...entryMetadata } = metadata;
-            // await registry.updateMetadata(entryLocation, entryMetadata);
-            //
-            // // Ignore files listed in .gitignore
-            // const gitignorePath = path.join(finalAgentPath, ".gitignore");
-            // let ig = ignore();
-            // try {
-            //     const ignoreExists = !!(await fs.stat(gitignorePath).catch(() => null));
-            //     if (ignoreExists) {
-            //         const gitignoreContent = await fs.readFile(gitignorePath, "utf-8");
-            //         ig = ig.add(gitignoreContent.split("\n"));
-            //     }
-            // } catch (err) {
-            //     Logger.warn("Could not parse .gitignore");
-            // }
-            //
-            // const allFiles = await globby(["**/*"], {
-            //     cwd: finalAgentPath,
-            //     dot: true,
-            //     followSymbolicLinks: false,
-            // });
-            //
-            // const filteredFiles = allFiles.filter((relPath) => {
-            //     if (
-            //         relPath === "metadata.json" ||
-            //         relPath.endsWith("~") ||
-            //         relPath.startsWith(".nearai/") ||
-            //         ig.ignores(relPath)
-            //     ) {
-            //         return false;
-            //     }
-            //     return true;
-            // });
+            await registry.updateMetadata(entryLocation, entryMetadata);
+
+            // Ignore files listed in .gitignore
+            const gitignorePath = path.join(finalAgentPath, ".gitignore");
+            let ig = ignore();
+            try {
+                const ignoreExists = !!(await fs.stat(gitignorePath).catch(() => null));
+                if (ignoreExists) {
+                    const gitignoreContent = await fs.readFile(gitignorePath, "utf-8");
+                    ig = ig.add(gitignoreContent.split("\n"));
+                }
+            } catch (err) {
+                Logger.warn("Could not parse .gitignore");
+            }
+
+            const allFiles = await globby(["**/*"], {
+                cwd: finalAgentPath,
+                dot: true,
+                followSymbolicLinks: false,
+            });
+
+            const filteredFiles = allFiles.filter((relPath) => {
+                if (
+                    relPath === "metadata.json" ||
+                    relPath.endsWith("~") ||
+                    relPath.startsWith(".nearai/") ||
+                    ig.ignores(relPath)
+                ) {
+                    return false;
+                }
+                return true;
+            });
 
             if (opts.local) {
-                // const destPath = path.join(os.homedir(), ".nearai", "registry", namespace, metadata.name, metadata.version);
-                //
-                // for (const relPath of filteredFiles) {
-                //     const src = path.join(finalAgentPath, relPath);
-                //     const dest = path.join(destPath, relPath);
-                //     await fs.mkdir(path.dirname(dest), { recursive: true });
-                //     await fs.writeFile(dest, await fs.readFile(src));
-                // }
-                // const metaDest = path.join(destPath, "metadata.json");
-                // await fs.mkdir(path.dirname(metaDest), { recursive: true });
-                // await fs.copyFile(metadataPath, metaDest);
+                const destPath = path.join(os.homedir(), ".nearai", "registry", namespace, metadata.name, metadata.version);
+
+                for (const relPath of filteredFiles) {
+                    const src = path.join(finalAgentPath, relPath);
+                    const dest = path.join(destPath, relPath);
+                    await fs.mkdir(path.dirname(dest), { recursive: true });
+                    await fs.writeFile(dest, await fs.readFile(src));
+                }
+                const metaDest = path.join(destPath, "metadata.json");
+                await fs.mkdir(path.dirname(metaDest), { recursive: true });
+                await fs.copyFile(metadataPath, metaDest);
 
                 spinner.succeed("Local copy complete!");
                 Logger.success(`Agent '${metadata.name}' copied locally under namespace '${namespace}'`);
-                // Logger.info(`Path: ${path.relative(process.cwd(), path.join(destPath))}`);
+                Logger.info(`Path: ${path.relative(process.cwd(), path.join(destPath))}`);
             } else {
-                // const entryLocation = {
-                //     namespace,
-                //     name: metadata.name,
-                //     version: metadata.version,
-                // };
-                //
-                // const { name, version, ...entryMetadata } = metadata;
-                // await registry.updateMetadata(entryLocation, entryMetadata);
-                //
-                // for (const file of filteredFiles) {
-                //     const filePath = path.join(finalAgentPath, file);
-                //     const buffer = await fs.readFile(filePath);
-                //     await registry.uploadFile(entryLocation, file, buffer);
-                // }
+                const entryLocation = {
+                    namespace,
+                    name: metadata.name,
+                    version: metadata.version,
+                };
+
+                const { name, version, ...entryMetadata } = metadata;
+                await registry.updateMetadata(entryLocation, entryMetadata);
+
+                for (const file of filteredFiles) {
+                    const filePath = path.join(finalAgentPath, file);
+                    const buffer = await fs.readFile(filePath);
+                    await registry.uploadFile(entryLocation, file, buffer);
+                }
 
                 spinner.succeed("Upload complete!");
                 Logger.success(`Agent '${entryLocation.name}' successfully uploaded!`);
