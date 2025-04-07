@@ -1,3 +1,8 @@
+export interface RunnerResult {
+    agentConfig: AgentConfig;
+    agentModule: any;
+}
+
 export interface NearAIAgentAuth {
     account_id?: string;
     signature?: string;
