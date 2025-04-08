@@ -21,18 +21,29 @@ export class Environment extends Client {
     }
 
     public override async fetchLastMessage(role = 'user'): Promise<any | null> {
-        // If you only want the very last user message:
-        if (role === 'user') {
-            const lastUser = this.localUserMessages[this.localUserMessages.length - 1];
-            return lastUser || null;
-        }
+        // @TODO - Explore what I was doing here
+        // if (role === 'user') {
+        //     const lastUser = this.localUserMessages[this.localUserMessages.length - 1];
+        //     return lastUser || null;
+        // }
         return super.fetchLastMessage(role);
     }
 
     public override async fetchLastMessageContent(role = 'user'): Promise<string> {
         const message = await this.fetchLastMessage(role);
         if (!message) return '';
-        return message.content ?? '';
+        // Check if message.content is an array in the expected structure.
+        if (Array.isArray(message.content) && message.content.length > 0) {
+            const first = message.content[0];
+            if (first && first.type === 'text' && first.text && typeof first.text.value === 'string') {
+                return first.text.value;
+            }
+        }
+        // If message.content is a plain string, return it.
+        if (typeof message.content === 'string') {
+            return message.content;
+        }
+        return '';
     }
 
     public getAllLocalMessages() {
@@ -45,6 +56,7 @@ let _env: Environment | null = null;
 export function initEnv(config: AgentConfig): void {
     if (_env) throw new Error('Environment already initialized');
     _env = new Environment(config);
+    config.env = _env;
 }
 
 export function env(): Environment {

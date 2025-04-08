@@ -30,14 +30,32 @@ export async function runner(): Promise<RunnerResult> {
     if (configJson) {
         try {
             agentConfig = JSON.parse(configJson) as AgentConfig;
+
+            // Remap python config keys to JS config keys
+            if ((agentConfig as any).user_auth && !agentConfig.auth) {
+                agentConfig.auth = (agentConfig as any).user_auth;
+                delete (agentConfig as any).user_auth;
+            }
+            if ((agentConfig as any).base_url && !agentConfig.baseUrl) {
+                agentConfig.baseUrl = (agentConfig as any).base_url;
+                delete (agentConfig as any).base_url;
+            }
+            if ((agentConfig as any).env_vars && !agentConfig.envVars) {
+                agentConfig.envVars = (agentConfig as any).env_vars;
+                delete (agentConfig as any).env_vars;
+            }
+            if ((agentConfig as any).thread_id && !agentConfig.threadId) {
+                agentConfig.threadId = (agentConfig as any).thread_id;
+                delete (agentConfig as any).thread_id;
+            }
+
+            // Reset baseUrl and threadId if not provided
+            agentConfig.baseUrl = agentConfig.baseUrl ?? 'https://api.near.ai/v1';
+            agentConfig.threadId = agentConfig.threadId ?? 'thread_local';
         } catch (err) {
             throw new Error(`Failed to parse config JSON: ${err}`);
         }
     }
-
-    // Load environment variables from the config
-    agentConfig.baseUrl = agentConfig.baseUrl ?? 'https://api.near.ai/v1';
-    agentConfig.threadId = agentConfig.threadId ?? 'thread_local';
 
     // Check if --local flag is set as argv[3] or could be in argv[4] if it exists
     const localFlagIndex = process.argv.findIndex(arg => arg === '--local');

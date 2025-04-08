@@ -19,7 +19,10 @@ export class Client {
             throw new Error('No auth provided in AgentConfig; near.ai requires an auth object.');
         }
 
-        const userAuthString = JSON.stringify(config.auth);
+        const userAuthString = typeof config.auth === 'string'
+            ? config.auth
+            : JSON.stringify(config.auth);
+
         if (userAuthString === '{}') {
             throw new Error(
                 'Invalid auth object. Make sure ~/.nearai/config.json has { "auth": { ... } } with all required keys.'
@@ -152,7 +155,7 @@ export class Client {
         return response.choices?.[0]?.message?.content ?? null;
     }
 
-    public async postAssistantReply(
+    public async addReply(
         message: string | null,
         messageType = ''
     ): Promise<any> {

@@ -19,4 +19,5 @@ export interface AgentConfig {
     baseUrl?: string;             // e.g. "https://api.near.ai/v1"
     threadId?: string;            // e.g. "thread_local"
     envVars?: Record<string, string>;
+    env?: any;
 }
