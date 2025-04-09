@@ -6,17 +6,16 @@ import { readMultiLineInput } from "../utils/input-handler.js";
 import { Boxer } from "../utils/boxer.js";
 import chalk from "chalk";
 import { NEARAI_COLORS } from "../utils/colors.js";
-import { env, runner } from "@jutsuai/nearai-ts-core";
+import { runner, Agent } from "@jutsuai/nearai-ts-core";
 import { globby } from "globby";
 import fs from "fs";
-import { mkdirSync } from "fs";
 import path from "path";
-import { build } from "esbuild";
 
 export const runCmd = new Command("run")
     .description("Run your NEARAI TypeScript agent in a multi-line interactive CLI")
-    .argument("[agentPath]", "Optional path to your agent .ts/.js file")
-    .action(async (agentPath: string | undefined) => {
+    .argument("[agentPath]", "Optional path to your agent .ts file")
+    .option("--local", "Use local dev environment (http://localhost:8081/v1)")
+    .action(async (agentPath: string | undefined, options: { local?: boolean }) => {
         Boxer.box(
             "Agent Runner",
             chalk.hex(NEARAI_COLORS["teal"]).bold("Time to run your NEAR AI agent!\n") +
@@ -60,57 +59,29 @@ export const runCmd = new Command("run")
             }
         }
 
-        // Transpile agent.ts to agent.js if needed
-        if (finalAgentPath.endsWith(".ts")) {
-            const agentJsPath = finalAgentPath.replace(/\.ts$/, ".js");
-            mkdirSync(path.dirname(agentJsPath), { recursive: true });
-            if (!fs.existsSync(agentJsPath)) {
-                Logger.info(`Transpiling ${finalAgentPath} to ${agentJsPath}...`);
-                try {
-                    await build({
-                        entryPoints: [finalAgentPath],
-                        outfile: agentJsPath,
-                        bundle: false,
-                        format: "esm",
-                        platform: "node",
-                        sourcemap: false,
-                        logLevel: "error"
-                    });
-                    if (!fs.existsSync(agentJsPath)) {
-                        Logger.error(`Expected ${agentJsPath} to exist, but it was not created.`);
-                        process.exit(1);
-                    }
-                    Logger.success(`Transpiled to ${agentJsPath}`);
-                } catch (err: any) {
-                    Logger.error(`Transpile failed: ${err.message}`);
-                    process.exit(1);
-                }
-            }
-            finalAgentPath = agentJsPath;
-        }
-
         // Load the runner module and run the agent
         try {
-            const { agentConfig, agentModule } = await callRunner(finalAgentPath);
             Logger.info(
                 "Type multiple lines. Enter /done (or blank line) to send. Enter /exit to quit.\n"
             );
 
+            // Load the agent module
+            const { agentConfig, agentModule } = await callRunner(finalAgentPath!, options.local);
+            const agent = new Agent(agentConfig);
+            const agentEnv = agent.getEnvironment();
+
             while (true) {
                 const userMessage = await readMultiLineInput();
                 if (!userMessage) {
-                    Logger.warn("Exiting interactive mode.");
-                    break;
+                    continue;
                 }
 
                 const thinking = startSpinner("");
-                env().setLocalUserMessage(userMessage);
 
                 let output: string | undefined;
                 if (typeof agentModule.default === "function") {
-                    output = await agentModule.default({ ...agentConfig, env: env() });
-                } else if (typeof agentModule.Agent === "function") {
-                    output = await agentModule.Agent(agentConfig);
+                    agentEnv.setLocalUserMessage(userMessage);
+                    output = await agentModule.default(agent, userMessage);
                 }
 
                 thinking.stop()
@@ -126,12 +97,17 @@ export const runCmd = new Command("run")
         }
     });
 
-async function callRunner(agentPath: string) {
+async function callRunner(agentPath: string, useLocal?: boolean) {
     const oldArgv = [...process.argv];
     let result;
     try {
         process.argv[2] = agentPath;
         process.argv[3] = "";
+
+        // If user passed --local, push it so runner() sees it
+        if (useLocal) {
+            process.argv.push("--local");
+        }
         result = await runner();
     } finally {
         process.argv.length = 0;

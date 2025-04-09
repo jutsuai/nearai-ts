@@ -39,7 +39,7 @@ export class Agent {
         );
 
         // Store the reply in the thread
-        if (reply) {
+        if (reply && this.env.getThreadId() !== "thread_local") {
             await this.env.addReply(reply);
         }
 

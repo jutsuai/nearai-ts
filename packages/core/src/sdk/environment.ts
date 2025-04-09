@@ -17,11 +17,11 @@ export class Environment extends Client {
     }
 
     public override async fetchLastMessage(role = 'user'): Promise<any | null> {
-        // @TODO - Incorporate local user messages if needed for CLI (not sure yet).
-        // if (role === 'user') {
-        //     const lastUser = this.localUserMessages[this.localUserMessages.length - 1];
-        //     return lastUser || null;
-        // }
+        if (role === 'user' && this.localUserMessages.length > 0) {
+            const lastLocal = this.localUserMessages[this.localUserMessages.length - 1];
+            return { role: 'user', content: lastLocal.content };
+        }
+        // Otherwise, fetch from the actual near.ai messages (container usage)
         return super.fetchLastMessage(role);
     }
 

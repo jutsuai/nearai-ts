@@ -57,17 +57,17 @@ export async function runner(): Promise<RunnerResult> {
         }
     }
 
-    // Check if --local flag is set as argv[3] or could be in argv[4] if it exists
-    const localFlagIndex = process.argv.findIndex(arg => arg === '--local');
-    if (localFlagIndex !== -1) {
-        agentConfig.baseUrl = 'http://localhost:8081/v1';
-    }
-
     // If agent is TS, transpile it first. Otherwise, use it as-is.
     const absoluteAgentPath = path.resolve(agentPath);
     let finalImportPath = absoluteAgentPath;
     if (agentPath.endsWith('.ts')) {
         finalImportPath = await transpileAgent(absoluteAgentPath);
+    }
+
+    // Check if --local flag is present, override baseUrl if you want
+    const localFlagIndex = process.argv.findIndex(arg => arg === '--local');
+    if (localFlagIndex !== -1) {
+        agentConfig.baseUrl = 'http://localhost:8081/v1';
     }
 
     // Initialize the environment
