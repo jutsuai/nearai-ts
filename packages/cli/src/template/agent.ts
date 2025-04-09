@@ -1,23 +1,21 @@
-export default async function runAgent(config: any) {
-    const env = config.env;
+import { Agent, AgentConfig } from '@jutsuai/nearai-ts-core';
 
+export default async function myAgent(agent: Agent, agentConfig: AgentConfig) {
     try {
-        const user_message = await env.fetchLastMessageContent();
-        console.log("User input:", user_message);
+        // Get user message
+        const userMessage = await agent.messages().lastUser();
+        console.log("User input:", userMessage);
 
-        const reply = await env.generateCompletion([
-            { role: "system", content: "You are a helpful assistant." },
-            { role: "user",   content: user_message }
-        ]);
+        // Build chain of messages
+        const reply = await agent
+            .system("You are a helpful assistant.")
+            .user(userMessage)
+            .run({ model: "llama-v3p1-70b-instruct" });
 
         console.log("Agent output:", reply);
-
-        if (env.getThreadId() !== "thread_local") {
-            await env.addReply(reply);
-        }
-
         return reply;
-    } catch (error) {
-        console.error("Agent error:", error);
+    } catch (err) {
+        console.error("Agent error:", err);
+        throw err;
     }
 }

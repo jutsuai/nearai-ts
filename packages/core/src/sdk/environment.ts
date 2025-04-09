@@ -16,12 +16,8 @@ export class Environment extends Client {
         return this.threadId;
     }
 
-    public setLocalUserMessage(content: string) {
-        this.localUserMessages.push({ role: 'user', content });
-    }
-
     public override async fetchLastMessage(role = 'user'): Promise<any | null> {
-        // @TODO - Explore what I was doing here
+        // @TODO - Incorporate local user messages if needed for CLI (not sure yet).
         // if (role === 'user') {
         //     const lastUser = this.localUserMessages[this.localUserMessages.length - 1];
         //     return lastUser || null;
@@ -46,6 +42,10 @@ export class Environment extends Client {
         return '';
     }
 
+    public setLocalUserMessage(content: string) {
+        this.localUserMessages.push({ role: 'user', content });
+    }
+
     public getAllLocalMessages() {
         return this.localUserMessages;
     }
@@ -53,10 +53,11 @@ export class Environment extends Client {
 
 let _env: Environment | null = null;
 
-export function initEnv(config: AgentConfig): void {
-    if (_env) throw new Error('Environment already initialized');
+export function initEnv(config: AgentConfig): Environment {
+    if (_env) return _env;
     _env = new Environment(config);
     config.env = _env;
+    return _env;
 }
 
 export function env(): Environment {

@@ -87,12 +87,22 @@ export async function runner(): Promise<RunnerResult> {
     };
 }
 
+// If we run it directly from node
 if (import.meta.url === `file://${process.argv[1]}`) {
     runner()
         .then(({ agentConfig, agentModule }) => {
-            console.log('Runner was called directly. Environment is initialized.');
-            console.log(`Agent path loaded: ${process.argv[2]}`);
-            console.log('If you wanted to run the agent right away, you could do so here.');
+            console.log('Runner was called directly. Environment is loaded.');
+            console.log(`Agent path: ${process.argv[2]}`);
+            if (typeof agentModule.default === 'function') {
+                agentModule.default(agentConfig)
+                    .then((result: any) => {
+                        console.log('Agent default returned:', result);
+                    })
+                    .catch((err: any) => {
+                        console.error('Error running agent default:', err);
+                        process.exit(1);
+                    });
+            }
         })
         .catch((err) => {
             console.error('Runner error:', err);
