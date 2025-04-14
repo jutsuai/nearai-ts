@@ -20,7 +20,7 @@ export const helpCmd = new Command("help")
                             desc: "Create a new agent project"
                     },
                     {
-                            cmd: "nearai-ts run [agentPath]",
+                            cmd: "nearai-ts run [agentPath] [options]",
                             desc: "Run your agent locally in interactive mode"
                     },
                     {
