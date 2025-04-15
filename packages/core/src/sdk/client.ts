@@ -20,6 +20,23 @@ import {
     VectorStoresClient
 } from './clients/index.js';
 
+import {
+    // For typed responses in threads subclient
+    MessageOutput,
+    ListMessagesQuery,
+    ListMessagesResponse,
+} from './clients/interfaces/IThreadsClient.js';
+
+import {
+    UploadFileRequest,
+    UploadFileResponse,
+} from './clients/interfaces/IFilesClient.js';
+
+import {
+    CreateVectorStoreRequest,
+    QueryVectorStoreRequest,
+} from './clients/interfaces/IVectorStoresClient.js';
+
 export class Client {
     protected config: AgentConfig;
     protected hubClient: OpenAI;
@@ -87,6 +104,10 @@ export class Client {
         this.vectorStores = new VectorStoresClient(config, this.hubClient);
     }
 
+    // -------------------------------------------------------------
+    // REFRESHED convenience methods, calling subclients instead of
+    // direct hubClient.* or fetch calls
+    // -------------------------------------------------------------
 
 
 
@@ -97,7 +118,7 @@ export class Client {
 
 
     //
-    // @TODO: Remove all below methods after client refactor
+    // @TODO: Refactor to use sub clients
     //
 
     public async listMessages(

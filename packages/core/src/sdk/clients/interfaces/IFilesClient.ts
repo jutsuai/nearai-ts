@@ -6,7 +6,7 @@
  *   - GET    /v1/files/{file_id}/content
  */
 
-export interface FileObject {
+export interface NearFileObject {
     id: string;
     bytes: number;
     created_at: number;
@@ -35,13 +35,13 @@ export interface UploadFileRequest {
     file: unknown;
     purpose: 'assistants'|'batch'|'fine-tune'|'vision';
 }
-export type UploadFileResponse = FileObject;
+export type UploadFileResponse = NearFileObject;
 
 // -----------------------------------------------------------------
 // 2) GET /v1/files/{file_id} => retrieve file info
 //   response => FileObject
 // -----------------------------------------------------------------
-export type RetrieveFileResponse = FileObject;
+export type RetrieveFileResponse = NearFileObject;
 
 // -----------------------------------------------------------------
 // 3) DELETE /v1/files/{file_id} => delete file
