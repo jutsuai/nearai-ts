@@ -1,12 +1,20 @@
 import { AgentConfig, AgentRunOptions } from '../interfaces.js';
 import { Environment } from './environment.js';
+import { Client } from './client.js';
 
 export class Agent {
     private env: Environment;
-    private chainMessages: Array<{ role: 'system'|'assistant'|'user'; content: string }> = [];
+    private client: any;
+    private chainMessages: Array<{ role: 'system' | 'assistant' | 'user'; content: string }> = [];
+
 
     constructor(config: AgentConfig) {
         this.env = new Environment(config);
+        this.client = new Client(config);
+    }
+
+    public raw(): Client {
+        return this.client;
     }
 
     public getEnvironment(): Environment {

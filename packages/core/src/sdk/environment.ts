@@ -16,6 +16,7 @@ export class Environment extends Client {
         return this.threadId;
     }
 
+    // @TODO - Implement with new underlying clients
     public override async fetchLastMessage(role = 'user'): Promise<any | null> {
         if (role === 'user' && this.localUserMessages.length > 0) {
             const lastLocal = this.localUserMessages[this.localUserMessages.length - 1];
