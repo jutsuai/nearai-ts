@@ -112,6 +112,7 @@ export class Agent {
      */
     public vectors() {
         return {
+            find: async (vectorStoreId: string) => this.env.findVectorStore(vectorStoreId),
             query: async (vectorStoreId: string, query: string, fullFiles = false) =>
                 this.env.queryVectorStore(vectorStoreId, query, fullFiles),
             addFile: async (vectorStoreId: string, fileId: string) =>
@@ -119,8 +120,8 @@ export class Agent {
             create: async (
                 name: string,
                 fileIds: string[],
-                expiresAfter: any,
-                chunkingStrategy: any,
+                expiresAfter?: any,
+                chunkingStrategy?: any,
                 metadata: unknown | null = null
             ) => this.env.createVectorStore(name, fileIds, expiresAfter, chunkingStrategy, metadata)
         };

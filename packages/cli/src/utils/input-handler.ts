@@ -1,12 +1,6 @@
 import prompts from "prompts";
+import { Logger } from "./logger.js";
 
-/**
- * Continuously prompt for lines until user enters:
- *   - blank line, or
- *   - /done, or
- *   - /exit
- * Returns the multi-line text, or empty string if the user wants to exit.
- */
 export async function readMultiLineInput(): Promise<string> {
     let lines: string[] = [];
 
@@ -19,19 +13,20 @@ export async function readMultiLineInput(): Promise<string> {
 
         // If user pressed Ctrl+C or ESC, line will be undefined:
         if (line === undefined) {
-            return ""; // exit
+            Logger.info("Session ended via Ctrl+C. Goodbye!");
+            process.exit(0);
         }
 
         const trimmed = line.trim();
 
         // Check for exit
         if (trimmed.toLowerCase() === "/exit") {
-            return "";
+            Logger.info("Session ended. Goodbye!");
+            process.exit(0);
         }
 
         // If blank line or user typed /done, we finalize:
         if (!trimmed || trimmed.toLowerCase() === "/done") {
-            // Combine lines into a single multi-line message
             const multiLine = lines.join("\n").trim();
             return multiLine;
         }
@@ -41,9 +36,6 @@ export async function readMultiLineInput(): Promise<string> {
     }
 }
 
-/**
- * Example for single-choice or yes/no
- */
 export async function promptYesNo(question: string): Promise<boolean> {
     const response = await prompts({
         type: "confirm",

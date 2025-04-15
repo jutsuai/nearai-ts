@@ -253,6 +253,35 @@ export class Client {
         return this.hubClient.beta.threads.messages.create(this.threadId, body);
     }
 
+    public async findVectorStore(idOrName: string): Promise<any> {
+        const headers = {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.hubClient.apiKey}`
+        };
+
+        const isLikelyId = idOrName.startsWith('vs_');
+        if (isLikelyId) {
+            const endpoint = `${this.baseUrl}/vector_stores/${idOrName}`;
+            const response = await fetch(endpoint, { method: 'GET', headers });
+            if (!response.ok) {
+                throw new Error(`Error fetching vector store: ${response.status} ${response.statusText}`);
+            }
+            return response.json();
+        } else {
+            const endpoint = `${this.baseUrl}/vector_stores?name=${encodeURIComponent(idOrName)}`;
+            const response = await fetch(endpoint, { method: 'GET', headers });
+            if (!response.ok) {
+                throw new Error(`Error searching vector store by name: ${response.status} ${response.statusText}`);
+            }
+            const data = await response.json();
+
+            if (!data || !data.data || data.data.length === 0) {
+                return null;
+            }
+            return data.data[0];
+        }
+    }
+
     public async queryVectorStore(
         vectorStoreId: string,
         query: string,

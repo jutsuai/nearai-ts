@@ -62,7 +62,7 @@ export const runCmd = new Command("run")
         // Load the runner module and run the agent
         try {
             Logger.info(
-                "Type multiple lines. Enter /done (or blank line) to send. Enter /exit to quit.\n"
+                "Type multiple lines. Enter blank line to send. Enter /exit to quit.\n"
             );
 
             // Load the agent module
