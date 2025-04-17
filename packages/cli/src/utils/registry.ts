@@ -94,8 +94,6 @@ export default class Registry {
             body: JSON.stringify(body)
         });
 
-        console.log('CHECK RESPONSE:', res.status, res.statusText);
-
         return res.ok;
     }
 
