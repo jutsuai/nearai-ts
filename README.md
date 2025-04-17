@@ -1,46 +1,459 @@
-# nearai-ts
-The typescript implementation of NEAR AI Agent Platform.
 
-## Development
+# NEAR AI TS - Getting Started Guide
 
-### Setup
+NEAR AI TS is a TypeScript implementation of the NEAR AI Agent Platform, consisting of a CLI package (`@jutsuai/nearai-ts-cli`) and a Core SDK (`@jutsuai/nearai-ts-core`) for building intelligent agents.
 
-1. Clone the repository
+## Table of Contents
+
+- [Installation](#installation)
+- [CLI Commands](#cli-commands)
+- [Creating Your First Agent](#creating-your-first-agent)
+- [Building a RAG System](#building-a-rag-system)
+- [Agent SDK Reference](#agent-sdk-reference)
+- [Running Agents](#running-agents)
+- [Authentication](#authentication)
+- [Advanced Usage](#advanced-usage)
+
+## Installation
+
+### Prerequisites
+
+- Node.js (v16 or later)
+- npm (v7 or later)
+
+### Installing the CLI
+
+To install the NEAR AI TS CLI globally:
 
 ```bash
-git clone git@github.com:jutsuai/nearai-ts.git
+# Install globally
+npm install -g @jutsuai/nearai-ts-cli
+
+# The CLI is available as the command 'nearai-ts'
+nearai-ts --version
 ```
 
-2. Install dependencies
+## CLI Commands
+
+The NEAR AI TS CLI provides several commands:
 
 ```bash
-npm install
-```
+# Create a new agent
+nearai-ts create <agent-name>
 
-3. Setup the project
+# Run an agent
+nearai-ts run <agent-path> [config-json]
 
-```bash
-npm run setup
-```
+# Upload an agent to NEAR AI platform
+nearai-ts upload <agent-path>
 
-4. Run the CLI
+# Login to NEAR AI platform
+nearai-ts login
 
-```bash
+# Display help information
 nearai-ts help
 ```
 
-## Publishing
+## Creating Your First Agent
 
-1. Make sure you're logged into npm
-
-```bash
-npm login
-```
-
-2. Select which package to publish
+### Using the CLI to Create an Agent
 
 ```bash
-npm run publish:cli
-npm run publish:core
+# Create a new agent project
+nearai-ts create my-agent
+
+# Navigate to the agent directory
+cd my-agent
 ```
 
+This creates a project structure with the basic agent implementation.
+
+### Basic Agent Structure
+
+A minimal agent in TypeScript looks like this:
+
+```typescript
+import { Agent, AgentConfig } from '@jutsuai/nearai-ts-core';
+
+export default async function myAgent(agent: Agent, agentConfig: AgentConfig) {
+    // Get user message
+    const userMessage = await agent.messages().lastUser();
+
+    // Build chain of messages
+    return await agent
+        .system("You are a helpful assistant.")
+        .user(userMessage)
+        .run({ model: "llama-v3p1-70b-instruct" });
+}
+```
+
+## Building a RAG System
+
+NEAR AI TS can rapidly help with building RAGs that run on NEAR AI's platform.
+
+### RAG Template Implementation
+
+Here's the template RAG implementation from the codebase:
+
+```typescript
+import { Agent, AgentConfig } from '@jutsuai/nearai-ts-core';
+
+export default async function myRagAgent(agent: Agent, agentConfig: AgentConfig) {
+    let vectorStoreId: any = "myVectorStore";
+
+    // Attempt to find an existing store named "myVectorStore"
+    let vectorStore = await agent.vectors().find(vectorStoreId);
+
+    // Create vector store with a dummy file if it doesn't exist
+    if (!vectorStore) {
+        const dummyContent = "I stand before you with unwavering faith in the collective power of humanity...";
+        const uploadedFile = await agent.files().upload(
+            dummyContent,
+            'assistants',
+        );
+
+        // Create a new vector store with the uploaded file
+        vectorStore = await agent.vectors().create(
+            'myVectorStore',
+            [uploadedFile.id],
+        );
+    }
+    vectorStoreId = vectorStore.id;
+
+    // Query the vector store with the user's message
+    const userMessage = await agent.messages().lastUser() || "No user message found.";
+    const results = await agent.vectors().query(vectorStoreId as string, userMessage, true);
+    const context = results.map((r: any) => r.file_content).join('\n');
+
+    // Provide the retrieved context + user message to the model
+    return await agent
+        .system(`You are a helpful RAG assistant. Below is context from our knowledge base:\n${context}`)
+        .user(userMessage)
+        .run({ model: "llama-v3p1-70b-instruct" });
+}
+```
+
+### Creating Your Own RAG Agent
+
+To create a RAG agent:
+
+1. Create a new agent project:
+   ```bash
+   nearai-ts create my-rag-agent
+   ```
+
+2. Use the RAG template as a starting point (or you can copy the code above):
+   ```bash
+   # Copy the RAG template
+   cp node_modules/@jutsuai/nearai-ts-cli/dist/template/agent.rag.ts ./my-rag-agent.ts
+   ```
+
+3. Customize the RAG agent to use your own documents:
+   ```typescript
+   // Example of adding your own documents to the vector store
+   const documents = [
+     "Document 1 content here...",
+     "Document 2 content here...",
+     "Document 3 content here..."
+   ];
+   
+   // Upload each document and collect file IDs
+   const fileIds = [];
+   for (const doc of documents) {
+     const file = await agent.files().upload(doc, 'assistants');
+     fileIds.push(file.id);
+   }
+   
+   // Create or update vector store with your documents
+   const vectorStore = await agent.vectors().create('myKnowledgeBase', fileIds);
+   ```
+
+## Agent SDK Reference
+
+The NEAR AI TS Core SDK provides a comprehensive API for building agents.
+
+### Agent Class
+
+```typescript
+import { Agent, AgentConfig } from '@jutsuai/nearai-ts-core';
+
+// Create an agent with configuration
+const agent = new Agent({
+  auth: {}, // Authentication credentials
+  baseUrl: "https://api.near.ai/v1", // API endpoint
+  threadId: "thread_xyz", // Thread ID for conversation
+  envVars: {} // Environment variables
+});
+```
+
+### Conversation Methods
+
+The Agent class provides chainable methods for building conversations:
+
+```typescript
+// Add a system message (instructions for the agent)
+agent.system("You are a helpful assistant.");
+
+// Add a user message
+agent.user("What's the weather like today?");
+
+// Add an assistant message
+agent.assistant("I don't have access to real-time weather data.");
+
+// Run the agent to generate a response
+const response = await agent.run({
+  model: "llama-v3p1-70b-instruct", // LLM model to use
+  maxTokens: 4000, // Maximum length of the response
+  temperature: 0.7, // Randomness of the response
+  tools: [], // Optional tools the agent can use
+  stream: false // Whether to stream the response
+});
+```
+
+### Message Management
+
+```typescript
+// Get messages from the thread
+const messages = await agent.messages().list();
+
+// Add a message to the thread
+await agent.messages().add("Hello there!", "assistant");
+
+// Get the last user message
+const lastUserMsg = await agent.messages().lastUser();
+
+// Get the last assistant message
+const lastAssistantMsg = await agent.messages().lastAssistant();
+```
+
+### File Operations
+
+```typescript
+// Read a file
+const content = await agent.files().read("document.txt");
+
+// Write a file
+await agent.files().write("output.txt", "File content");
+
+// Upload a file to the platform
+const file = await agent.files().upload("File content", "assistants");
+```
+
+### Vector Store Operations
+
+```typescript
+// Find a vector store by ID or name
+const store = await agent.vectors().find("myVectorStore");
+
+// Query a vector store
+const results = await agent.vectors().query(
+  "vs_123abc", // Vector store ID
+  "What is machine learning?", // Query text
+  true // Whether to include full file content
+);
+
+// Add a file to a vector store
+await agent.vectors().addFile("vs_123abc", "file_456");
+
+// Create a new vector store
+const newStore = await agent.vectors().create(
+  "myVectorStore", // Name
+  ["file_123", "file_456"], // File IDs
+  undefined, // Expiration
+  undefined, // Chunking strategy
+  { custom: "metadata" } // Optional metadata
+);
+```
+
+### Environment and Client Access
+
+```typescript
+// Get the agent's environment
+const env = agent.getEnvironment();
+
+// Get the raw client for advanced operations
+const client = agent.raw();
+
+// Generate a completion directly
+const completion = await agent.completions().generate([
+  { role: "system", content: "You are a helpful assistant." },
+  { role: "user", content: "Hello" }
+], "llama-v3p1-70b-instruct");
+```
+
+## Running Agents
+
+### CLI Execution
+
+```bash
+# Run an agent locally
+nearai-ts run ./my-agent.ts
+
+# Run with a specific config
+nearai-ts run ./my-agent.ts '{"auth": {...}}'
+
+# Run with local API server (for development)
+nearai-ts run ./my-agent.ts --local
+```
+
+When you run an agent, the NEAR AI TS runner:
+1. Loads your agent file (transpiling TypeScript to JavaScript if needed)
+2. Loads configuration from the command line or `~/.nearai/config.json`
+3. Initializes the environment
+4. Calls your agent's default export function
+
+## Authentication
+
+NEAR AI TS requires authentication to interact with the platform (*before you can run or upload agents*).
+
+### Login via CLI
+
+The easiest way to authenticate is using the CLI:
+
+```bash
+nearai-ts login
+```
+
+This will guide you through the login process and store your credentials in `~/.nearai/config.json`.
+
+### Configuration File
+
+The authentication credentials are stored in a JSON file:
+
+```json
+{
+  "auth": {
+    "account_id": "your_account_id",
+    "signature": "your_signature",
+    "public_key": "your_public_key",
+    "nonce": "your_nonce",
+    "recipient": "your_recipient",
+    "message": "your_message",
+    "on_behalf_of": null
+  }
+}
+```
+
+### Manual Authentication
+
+You can also provide auth credentials in your code:
+
+```typescript
+const agent = new Agent({
+  auth: {
+    account_id: "your_account_id",
+    signature: "your_signature",
+    public_key: "your_public_key",
+    // Other required fields
+  }
+});
+```
+
+## Advanced Usage
+
+### Custom Thread Management
+
+You can work with specific conversation threads:
+
+```typescript
+// Create an agent with a specific thread ID
+const agent = new Agent({
+  threadId: "thread_xyz"
+});
+
+// Access messages from a specific thread
+const messages = await agent.messages("thread_abc").list();
+```
+
+### Error Handling
+
+Proper error handling is essential:
+
+```typescript
+try {
+  const response = await agent.run();
+  console.log("Response:", response);
+} catch (error) {
+  console.error("Error running agent:", error);
+  
+  // Check for specific error types
+  if (error.status === 401) {
+    console.error("Authentication failed - please log in again");
+  } else if (error.status === 404) {
+    console.error("Resource not found");
+  }
+}
+```
+
+### Environment Variables
+
+You can pass environment variables to your agent:
+
+```typescript
+const agent = new Agent({
+  envVars: {
+    API_KEY: process.env.THIRD_PARTY_API_KEY,
+    DEBUG: "true"
+  }
+});
+```
+
+### Integration with Express
+
+Example of using NEAR AI TS in an Express application:
+
+```typescript
+import express from 'express';
+import { Agent } from '@jutsuai/nearai-ts-core';
+
+const app = express();
+app.use(express.json());
+
+// Create a single agent instance
+const agent = new Agent({
+  // Load auth from secure environment variable
+  auth: JSON.parse(process.env.NEAR_AI_AUTH || '{}')
+});
+
+app.post('/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+    
+    // Process the message
+    const response = await agent
+      .system("You are a helpful assistant.")
+      .user(message)
+      .run();
+    
+    res.json({ response });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
+```
+
+## Publishing Your Agents
+
+Once you've developed and tested your agents, you can publish them:
+
+```bash
+# Upload your agent to NEAR AI
+nearai-ts upload ./my-agent.ts
+```
+
+This will:
+1. Package your agent code
+2. Upload it to the NEAR AI platform
+3. Make it available for deployment and integration
+
+## Conclusion
+
+NEAR AI TS provides a powerful TypeScript framework for building, testing, and deploying AI agents. By leveraging the CLI and SDK, you can quickly create sophisticated agents with features like conversation management, RAG capabilities, and vector store integration.
+
+For more information:
+- Check the GitHub repository: [github.com/jutsuai/nearai-ts](https://github.com/jutsuai/nearai-ts)
+- Install the packages: [@jutsuai/nearai-ts-cli](https://www.npmjs.com/package/@jutsuai/nearai-ts-cli) and [@jutsuai/nearai-ts-core](https://www.npmjs.com/package/@jutsuai/nearai-ts-core)
