@@ -6,7 +6,7 @@ export default async function myAgent(agent: Agent, agentConfig: AgentConfig) {
         const userMessage = await agent.messages().lastUser();
 
         // Build chain of messages
-        await agent
+        return await agent
             .system("You are a helpful assistant.")
             .user(userMessage)
             .run({ model: "llama-v3p1-70b-instruct" });
