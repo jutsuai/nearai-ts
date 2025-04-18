@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { loadBanner } from "./utils/banner.js";
 import { createCmd } from "./commands/create.js";
@@ -12,11 +15,18 @@ export async function main(): Promise<void> {
     // Load the banner
     loadBanner();
 
+    // Load package.json
+    const pkg = JSON.parse(
+        readFileSync(
+            join(dirname(fileURLToPath(import.meta.url)), "..", "package.json"),
+            "utf-8",
+        ),
+    );
+
     // CLI metadata
-    program
-        .name("nearai")
-        .description("NEAR AI TypeScript CLI")
-        .version("0.0.1");
+    program.name("nearai");
+    program.description("NEAR AI TypeScript CLI");
+    program.version(pkg.version);
 
     // Register subcommands
     program.addCommand(createCmd);
