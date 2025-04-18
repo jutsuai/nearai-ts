@@ -20,23 +20,6 @@ import {
     VectorStoresClient
 } from './clients/index.js';
 
-import {
-    // For typed responses in threads subclient
-    MessageOutput,
-    ListMessagesQuery,
-    ListMessagesResponse,
-} from './clients/interfaces/IThreadsClient.js';
-
-import {
-    UploadFileRequest,
-    UploadFileResponse,
-} from './clients/interfaces/IFilesClient.js';
-
-import {
-    CreateVectorStoreRequest,
-    QueryVectorStoreRequest,
-} from './clients/interfaces/IVectorStoresClient.js';
-
 export class Client {
     protected config: AgentConfig;
     protected hubClient: OpenAI;
@@ -183,12 +166,17 @@ export class Client {
     public async uploadFile(
         fileContent: string,
         purpose: any,
-        encoding = 'utf-8',
+        encoding: any = 'utf-8',
         fileName = 'file.txt',
         fileType = 'text/plain'
     ): Promise<FileObject> {
-        const blob = new Blob([fileContent], { type: fileType });
-        const file = new File([blob], fileName, { type: fileType, lastModified: Date.now() });
+        const buffer = Buffer.from(fileContent, encoding);
+        const blob = new Blob([buffer], { type: fileType });
+        const file = new File(
+            [blob],
+            fileName,
+            { type: fileType, lastModified: Date.now() },
+        );
         return this.hubClient.files.create({ file, purpose });
     }
 
@@ -234,9 +222,6 @@ export class Client {
             // stream, // omitted if not supported
         };
 
-        // If near.ai doesn't recognize "tools", remove it
-        // delete params.tools;
-
         const response = await this.hubClient.chat.completions.create(params);
         return response.choices?.[0]?.message?.content ?? null;
     }
@@ -253,33 +238,54 @@ export class Client {
         return this.hubClient.beta.threads.messages.create(this.threadId, body);
     }
 
-    public async findVectorStore(idOrName: string): Promise<any> {
+    public async findVectorStore(storeId: string): Promise<any> {
         const headers = {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${this.hubClient.apiKey}`
         };
 
-        const isLikelyId = idOrName.startsWith('vs_');
+        const isLikelyId = storeId.startsWith('vs_');
         if (isLikelyId) {
-            const endpoint = `${this.baseUrl}/vector_stores/${idOrName}`;
+            const endpoint = `${this.baseUrl}/vector_stores/${storeId}`;
             const response = await fetch(endpoint, { method: 'GET', headers });
             if (!response.ok) {
                 throw new Error(`Error fetching vector store: ${response.status} ${response.statusText}`);
             }
             return response.json();
         } else {
-            const endpoint = `${this.baseUrl}/vector_stores?name=${encodeURIComponent(idOrName)}`;
+            const endpoint = `${this.baseUrl}/vector_stores`;
             const response = await fetch(endpoint, { method: 'GET', headers });
             if (!response.ok) {
                 throw new Error(`Error searching vector store by name: ${response.status} ${response.statusText}`);
             }
             const data = await response.json();
-
-            if (!data || !data.data || data.data.length === 0) {
+            if (!data || data.length === 0) {
                 return null;
             }
-            return data.data[0];
+
+            // Iterate through list of vector stores and try to find one with matching id
+            for (const vectorStore of data) {
+                if (vectorStore.name === storeId) {
+                    return vectorStore;
+                }
+            }
+
+            return null;
         }
+    }
+
+    public async deleteVectorStore(vectorStoreId: string): Promise<any> {
+        const headers = {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.hubClient.apiKey}`
+        };
+
+        const endpoint = `${this.baseUrl}/vector_stores/${vectorStoreId}`;
+        const response = await fetch(endpoint, { method: 'DELETE', headers });
+        if (!response.ok) {
+            throw new Error(`Error deleting vector store: ${response.status} ${response.statusText}`);
+        }
+        return response.json();
     }
 
     public async queryVectorStore(

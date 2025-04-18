@@ -36,6 +36,11 @@ export class Agent {
         return this;
     }
 
+    public documentation(content: string): Agent {
+        this.chainMessages.push({ role: 'assistant', content });
+        return this;
+    }
+
     public async run(options?: AgentRunOptions): Promise<string | null> {
         const reply = await this.env.generateCompletion(
             this.chainMessages,
@@ -103,7 +108,7 @@ export class Agent {
         return {
             read: async (filename: string) => this.env.readFile(filename),
             write: async (filename: string, content: string) => this.env.writeFile(filename, content),
-            upload: async (fileContent: string, purpose: string) => this.env.uploadFile(fileContent, purpose),
+            upload: async (fileContent: string, purpose: string, encoding?: string, fileName?: string) => this.env.uploadFile(fileContent, purpose),
         };
     }
 
@@ -123,7 +128,8 @@ export class Agent {
                 expiresAfter?: any,
                 chunkingStrategy?: any,
                 metadata: unknown | null = null
-            ) => this.env.createVectorStore(name, fileIds, expiresAfter, chunkingStrategy, metadata)
+            ) => this.env.createVectorStore(name, fileIds, expiresAfter, chunkingStrategy, metadata),
+            delete: async (vectorStoreId: string) => this.env.deleteVectorStore(vectorStoreId)
         };
     }
 }
