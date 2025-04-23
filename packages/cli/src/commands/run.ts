@@ -81,7 +81,7 @@ export const runCmd = new Command("run")
                 let output: string | undefined;
                 if (typeof agentModule.default === "function") {
                     agentEnv.setLocalUserMessage(userMessage);
-                    output = await agentModule.default(agent);
+                    output = await agentModule.default(agent, agentConfig);
                 }
 
                 thinking.stop()

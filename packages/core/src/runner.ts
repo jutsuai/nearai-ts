@@ -3,6 +3,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
 import { RunnerResult, AgentConfig } from './interfaces.js';
+import { loadEnvVariables } from './sdk/utils.js';
 import { initEnv } from './sdk/environment.js';
 import { transpileAgent } from './sdk/utils.js';
 
@@ -40,10 +41,6 @@ export async function runner(): Promise<RunnerResult> {
                 agentConfig.baseUrl = (agentConfig as any).base_url;
                 delete (agentConfig as any).base_url;
             }
-            if ((agentConfig as any).env_vars && !agentConfig.envVars) {
-                agentConfig.envVars = (agentConfig as any).env_vars;
-                delete (agentConfig as any).env_vars;
-            }
             if ((agentConfig as any).thread_id && !agentConfig.threadId) {
                 agentConfig.threadId = (agentConfig as any).thread_id;
                 delete (agentConfig as any).thread_id;
@@ -63,6 +60,12 @@ export async function runner(): Promise<RunnerResult> {
     if (agentPath.endsWith('.ts')) {
         finalImportPath = await transpileAgent(absoluteAgentPath);
     }
+
+    // Load environment variables
+    agentConfig.envVars = loadEnvVariables(
+        absoluteAgentPath,
+        ['CDP_API_KEY_NAME', 'CDP_API_KEY_PRIVATE_KEY']
+    );
 
     // Check if --local flag is present, override baseUrl if you want
     const localFlagIndex = process.argv.findIndex(arg => arg === '--local');

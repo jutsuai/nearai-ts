@@ -1,6 +1,6 @@
 {
   "name": "@jutsuai/nearai-ts-core",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "NEARAI TypeScript Core (SDK)",
   "keywords": [],
   "author": "Wil Neeley <wil@jutsu.ai>",

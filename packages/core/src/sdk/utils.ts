@@ -2,6 +2,8 @@ import { transpileModule, ScriptTarget, ModuleKind } from 'typescript';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import path from 'path';
 import os from 'os';
+import fs from 'fs';
+import dotenv from 'dotenv';
 
 export async function transpileAgent(agentPath: string): Promise<string> {
     // Create a temp folder for compiled JS
@@ -38,4 +40,25 @@ export async function transpileAgent(agentPath: string): Promise<string> {
     );
 
     return outJsPath;
+}
+
+export function loadEnvVariables(
+    agentDir: string,
+    envKeys: string[] = []
+): Record<string, string> {
+    const envVars: Record<string, string> = {};
+
+    // Agent's local .env
+    const localEnvPath = path.join(path.dirname(agentDir), '.env');
+    if (fs.existsSync(localEnvPath)) {
+        const parsed = dotenv.parse(fs.readFileSync(localEnvPath));
+        Object.assign(envVars, parsed);
+    }
+
+    // Whitelist of env keys to load
+    envKeys.forEach((k) => {
+        if (process.env[k] !== undefined) envVars[k] = process.env[k] as string;
+    });
+
+    return envVars;
 }
