@@ -196,6 +196,45 @@ export class Client {
         return await content.text();
     }
 
+    public async generateImages(
+        prompt: string,
+        opts: {
+            n?: number;
+            size?: '256x256' | '512x512' | '1024x1024';
+            format?: 'url' | 'b64_json';
+            model?: string;
+            provider?: string;
+        } = {}
+    ): Promise<string[]> {
+        const {
+            n = 1,
+            size = '1024x1024',
+            format = 'b64_json',
+            model,
+            provider = 'dall-e-3'
+        } = opts;
+        const res = await this.base.createImages({
+            prompt,
+            n,
+            size,
+            response_format: format,
+            model,
+            provider
+        });
+
+        // Hub returns   { data: [ { url | b64_json }, … ] }
+        return res.data.map((d: any) => {
+            if (format === 'url') {
+                // If the provider returned only base-64, convert it to a data URI
+                if (d.url || d.image_url) return d.url || d.image_url;
+                if (d.b64_json) return `data:image/png;base64,${d.b64_json}`;
+                return null;
+            }
+            // format === 'b64_json'
+            return d.b64_json ?? d.base64 ?? null;
+        });
+    }
+
     public async generateCompletion(
         messages: Array<{ role: "system"|"assistant"|"user"; content: string }>,
         model = "llama-v3p1-70b-instruct",

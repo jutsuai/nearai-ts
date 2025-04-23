@@ -88,6 +88,18 @@ export class Agent {
     }
 
     /**
+     * Chainable sub-API for images.
+     */
+    public images() {
+        return {
+            generate: (
+                prompt: string,
+                opts?: { n?: number; size?: '256x256'|'512x512'|'1024x1024'; format?: 'url'|'b64_json'; model?: string }
+            ) => this.env.generateImages(prompt, opts)
+        };
+    }
+
+    /**
      * Chainable sub-API for completions.
      */
     public completions() {

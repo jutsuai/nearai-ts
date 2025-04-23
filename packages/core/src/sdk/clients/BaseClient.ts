@@ -26,7 +26,7 @@ export class BaseClient {
         this.hubClient = hubClient;
     }
     /**
-     * POST /v1/completions
+     * POST /completions
      * The OpenAPI spec indicates anyOf: CompletionsRequest, ChatCompletionsRequest, ...
      */
     public async createCompletions(
@@ -38,56 +38,56 @@ export class BaseClient {
 
         return this.hubClient.request({
             method: 'post',
-            path: '/v1/completions',
+            path: '/completions',
             body: data,
         });
     }
 
     /**
-     * POST /v1/chat/completions
+     * POST /chat/completions
      */
     public async createChatCompletions(
         data: AnyCompletionsBody
     ): Promise<CompletionsResponse> {
         return this.hubClient.request({
             method: 'post',
-            path: '/v1/chat/completions',
+            path: '/chat/completions',
             body: data,
         });
     }
 
     /**
-     * GET /v1/models
+     * GET /models
      */
     public async listModels(): Promise<unknown> {
         return this.hubClient.request({
             method: 'get',
-            path: '/v1/models',
+            path: '/models',
         });
     }
 
     /**
-     * POST /v1/embeddings
+     * POST /embeddings
      */
     public async createEmbeddings(
         data: EmbeddingsRequest
     ): Promise<CompletionsResponse> {
         return this.hubClient.request({
             method: 'post',
-            path: '/v1/embeddings',
+            path: '/embeddings',
             body: data,
         });
     }
 
     /**
-     * POST /v1/images/generations
+     * POST /images/generations
      */
     public async createImages(
         data: ImageGenerationRequest
     ): Promise<CompletionsResponse> {
         return this.hubClient.request({
             method: 'post',
-            path: '/v1/images/generations',
+            path: '/images/generations',
             body: data,
         });
     }
@@ -97,7 +97,7 @@ export class BaseClient {
     // -------------------------------------------------
 
     /**
-     * POST /v1/get_agent_public_key
+     * POST /get_agent_public_key
      * According to your OpenAPI, `agent_name` is in `parameters` with `in:"query"`.
      */
     public async getAgentPublicKey(
@@ -106,7 +106,7 @@ export class BaseClient {
         // Notice we put agent_name in `query`, not in body.
         return this.hubClient.request({
             method: 'post',
-            path: '/v1/get_agent_public_key',
+            path: '/get_agent_public_key',
             query: {
                 agent_name: params.agent_name,
             },
@@ -114,44 +114,44 @@ export class BaseClient {
     }
 
     /**
-     * POST /v1/nonce/revoke
+     * POST /nonce/revoke
      */
     public async revokeNonce(data: RevokeNonceRequest): Promise<RevokeNonceResponse> {
         return this.hubClient.request({
             method: 'post',
-            path: '/v1/nonce/revoke',
+            path: '/nonce/revoke',
             body: data,
         });
     }
 
     /**
-     * POST /v1/nonce/revoke/all
+     * POST /nonce/revoke/all
      */
     public async revokeAllNonces(): Promise<RevokeAllNoncesResponse> {
         return this.hubClient.request({
             method: 'post',
-            path: '/v1/nonce/revoke/all',
+            path: '/nonce/revoke/all',
         });
     }
 
     /**
-     * GET /v1/nonce/list
+     * GET /nonce/list
      */
     public async listNonces(): Promise<ListNoncesResponse> {
         return this.hubClient.request({
             method: 'get',
-            path: '/v1/nonce/list',
+            path: '/nonce/list',
         });
     }
 
     /**
-     * GET /v1/version
+     * GET /version
      * The OpenAPI says it returns a string
      */
     public async getVersion(): Promise<GetVersionResponse> {
         return this.hubClient.request({
             method: 'get',
-            path: '/v1/version',
+            path: '/version',
         });
     }
 

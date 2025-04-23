@@ -40,8 +40,16 @@ export interface EmbeddingsRequest {
 }
 
 export interface ImageGenerationRequest {
+    /* ───── minimum ───── */
     prompt: string;
-    model?: string;
+
+    /* ───── standard OpenAI / near-ai options ───── */
+    n?: number;            // how many images to create (default 1)
+    size?: '256x256' | '512x512' | '1024x1024';
+    response_format?: 'url' | 'b64_json';
+    model?: string;        // e.g. "dall-e-3"
+
+    /* ───── advanced / stable-diffusion-style knobs ───── */
     provider?: string | null;
     init_image?: string | null;
     image_strength?: number | null;
