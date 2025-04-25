@@ -7,6 +7,7 @@
   "details": {
     "agent": {
       "framework": "ts",
+      "runner": "exp",
       "defaults": {
         "model": "llama-v3p1-70b-instruct",
         "model_provider": "fireworks",
