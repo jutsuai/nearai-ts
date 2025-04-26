@@ -6,8 +6,7 @@
   "tags": [],
   "details": {
     "agent": {
-      "framework": "ts",
-      "runner": "exp",
+      "framework": "ts_jutsu",
       "defaults": {
         "model": "llama-v3p1-70b-instruct",
         "model_provider": "fireworks",
