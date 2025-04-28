@@ -57,7 +57,7 @@ export default async function myRepoRAGAgent(agent: Agent, config: AgentConfig) 
     │ 1. Use ONLY the information found in <<REPO_CONTEXT>>           │
     │    unless general language-level knowledge is absolutely needed.│
     │ 2. If the context is missing critical details, ask a follow-up. │
-    │ 3. Quote code inside triple-fenced blocks and include the        │
+    │ 3. Quote code inside triple-fenced blocks and include the       │
     │    relative file path (and line numbers when helpful).          │
     │ 4. When suggesting edits, output a **unified diff** or a        │
     │    full replacement snippet that can be copy-pasted.            │
