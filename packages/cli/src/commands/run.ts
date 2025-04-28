@@ -34,7 +34,7 @@ export const runCmd = new Command("run")
                 );
                 process.exit(1);
             }
-            absTarget = await promptForTarget(target ?? "src/agents");
+            absTarget = await promptForTarget(target ?? "agent.ts");
         }
 
         let finalAgentPath: string | undefined;

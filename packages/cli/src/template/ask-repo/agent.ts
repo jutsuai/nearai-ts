@@ -7,8 +7,8 @@ import path from "node:path";
 import os from "node:os";
 
 // @TODO - Switch example repo to nearai-ts when ready (after its set to public)
-// const REPO_URL   = "https://github.com/jutsuai/nearai-ts";
-const REPO_URL   = "https://github.com/githubtraining/hellogitworld";
+const REPO_URL   = "https://github.com/jutsuai/nearai-ts";
+// const REPO_URL   = "https://github.com/githubtraining/hellogitworld";
 const BRANCH     = "main";
 const STORE_ID   = `repo:${REPO_URL.split("/").slice(-2).join("/")}@${BRANCH}`;
 const TEXT_EXT = /\.(md|ts|js|jsx|tsx|py|go|rs|java|json)$/i;
@@ -48,9 +48,39 @@ export default async function myRepoRAGAgent(agent: Agent, config: AgentConfig) 
     const hits     = await agent.vectors().query(store.id, userQuery, false);
     const context  = hits.map((h: any) => h.chunk_text).join("\n");
 
+    // ---------- Better RAG prompt ----------
+    const SYSTEM_PROMPT = `
+    You are **RepoGPT**, a senior full-stack engineer acting as the team’s
+    AI pair-programmer for the target Git repository.
+    
+    ╭─── Operating Rules ─────────────────────────────────────────────╮
+    │ 1. Use ONLY the information found in <<REPO_CONTEXT>>           │
+    │    unless general language-level knowledge is absolutely needed.│
+    │ 2. If the context is missing critical details, ask a follow-up. │
+    │ 3. Quote code inside triple-fenced blocks and include the        │
+    │    relative file path (and line numbers when helpful).          │
+    │ 4. When suggesting edits, output a **unified diff** or a        │
+    │    full replacement snippet that can be copy-pasted.            │
+    │ 5. Keep answers concise, actionable, and free of marketing hype.│
+    ╰─────────────────────────────────────────────────────────────────╯
+    
+    After thinking step-by-step, answer in **this format**:
+    
+    **Answer**  
+    <direct reply to the user’s question>
+    
+    **Relevant Snippets**  
+    - \`path/to/file.ext:⟨start-line⟩-⟨end-line⟩\`  
+    \`\`\`<language>  
+    <quoted lines>  
+    \`\`\`
+    
+    (Repeat the bullet for each snippet. Omit this section if none are needed.)
+    `;
+
     return await agent
-        .system("You are a helpful RAG assistant over the target code repository.")
-        .assistant(`Repo context:\n${context}`)
+        .system(SYSTEM_PROMPT)
+        .assistant(`<<REPO_CONTEXT>>\n${context}`)
         .user(userQuery)
         .run({ model: "llama-v3p1-70b-instruct" });
 }
