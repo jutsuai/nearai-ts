@@ -1,8 +1,9 @@
 import { Agent, AgentConfig } from '@jutsuai/nearai-ts-core';
 import { promises as fs } from "node:fs";
-import { simpleGit, SimpleGit } from 'simple-git';
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
+const sh = promisify(exec)
 import path from "node:path";
-import fg from "fast-glob";
 import os from "node:os";
 
 // @TODO - Switch example repo to nearai-ts when ready (after its set to public)
@@ -10,6 +11,8 @@ import os from "node:os";
 const REPO_URL   = "https://github.com/githubtraining/hellogitworld";
 const BRANCH     = "main";
 const STORE_ID   = `repo:${REPO_URL.split("/").slice(-2).join("/")}@${BRANCH}`;
+const TEXT_EXT = /\.(md|ts|js|jsx|tsx|py|go|rs|java|json)$/i;
+const IGNORE   = /(^|\/)(node_modules|dist|\.git)(\/|$)/;
 
 export default async function myRepoRAGAgent(agent: Agent, config: AgentConfig) {
     const userQuery = await agent.messages().lastUser() || "No user message found.";
@@ -53,18 +56,31 @@ export default async function myRepoRAGAgent(agent: Agent, config: AgentConfig) 
 }
 
 export async function cloneOrPull(repoUrl: string, workDir: string) {
-    const git: SimpleGit = simpleGit({ baseDir: workDir });
+    // fresh clone
     if (!(await fs.stat(workDir).catch(() => false))) {
-        await git.clone(repoUrl, workDir);
-    } else {
-        await git.pull();
+        await sh(`git clone --depth 1 ${repoUrl} "${workDir}"`);
+        return;
     }
+    // fast-forward pull
+    await sh(`git -C "${workDir}" pull --ff-only`);
 }
 
 export async function listTextFiles(root: string): Promise<string[]> {
-    // ignore binaries / vendored code
-    return fg("**/*.{md,ts,js,jsx,tsx,py,go,rs,java,json}", {
-        cwd: root,
-        ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"]
-    });
+    const out: string[] = [];
+    async function walk(dir: string) {
+        for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+            const abspath = path.join(dir, entry.name);
+            const relpath = path.relative(root, abspath);
+
+            if (IGNORE.test(relpath)) continue;
+
+            if (entry.isDirectory()) {
+                await walk(abspath);
+            } else if (TEXT_EXT.test(entry.name)) {
+                out.push(relpath);
+            }
+        }
+    }
+    await walk(root);
+    return out;
 }
