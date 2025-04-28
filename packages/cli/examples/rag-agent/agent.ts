@@ -1,9 +1,13 @@
 import { Agent, AgentConfig } from '@jutsuai/nearai-ts-core';
+import foo from "./foo.js";
 
 const STORE_ID = "myVectorStore";
 
 export default async function myDocRAGAgent(agent: Agent, agentConfig: AgentConfig) {
     const userMessage = await agent.messages().lastUser() || "No user message found.";
+
+    // @TODO - Temporarily demonstrate import of a local module
+    //console.log("foo:", foo());
 
     // Attempt to find an existing store named "myVectorStore", otherwise create it
     let vectorStore = await agent.vectors().find(STORE_ID).catch(() => null);

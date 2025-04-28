@@ -1,45 +1,72 @@
-import { transpileModule, ScriptTarget, ModuleKind } from 'typescript';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import ts from "typescript";
+import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
 import dotenv from 'dotenv';
 
-export async function transpileAgent(agentPath: string): Promise<string> {
-    // Create a temp folder for compiled JS
+export async function transpileAgent(
+    entryTs: string,
+    allowList?: string[]
+): Promise<string> {
     const outDir = path.join(os.tmpdir(), "nearai_ts_compiled");
-    if (!existsSync(outDir)) {
-        mkdirSync(outDir, { recursive: true });
+    mkdirSync(outDir, { recursive: true });
+
+    /*──── Legacy mode ────*/
+    if (allowList?.length) {
+        let entryOut = "";
+        for (const tsFile of allowList) {
+            const js = ts.transpileModule(
+                readFileSync(tsFile, "utf-8"),
+                {
+                    compilerOptions: {
+                        module: ts.ModuleKind.ES2022,
+                        target: ts.ScriptTarget.ESNext,
+                        moduleResolution: ts.ModuleResolutionKind.NodeNext,
+                        esModuleInterop: true,
+                    },
+                    fileName: tsFile,
+                }
+            ).outputText;
+
+            const outPath = path.join(outDir,
+                path.basename(tsFile).replace(/\.ts$/, ".js"));
+            writeFileSync(outPath, js);
+            if (path.resolve(tsFile) === path.resolve(entryTs)) entryOut = outPath;
+        }
+        writeFlag(outDir);
+        return entryOut;
     }
 
-    // Read the original TS source
-    const tsCode = readFileSync(agentPath, 'utf-8');
-
-    // Transpile using TypeScript’s built-in API
-    // This matches your old example of { module: ES2022, target: ESNext, etc. }
-    const { outputText } = transpileModule(tsCode, {
-        compilerOptions: {
-            module: ModuleKind.ES2022,    // = 6
-            target: ScriptTarget.ESNext,  // = 99
-            esModuleInterop: true,
-            moduleResolution: 2,         // NodeNext
-        }
-    });
-
-    // Write out as a plain .js file
-    const outJsPath = path.join(
+    /*──── Graph mode (CLI) ────*/
+    const program = ts.createProgram([entryTs], {
+        module: ts.ModuleKind.ES2022,
+        target: ts.ScriptTarget.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.NodeNext,
+        rootDir: path.dirname(entryTs),
         outDir,
-        path.basename(agentPath, '.ts') + '.js'
-    );
-    writeFileSync(outJsPath, outputText);
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+        inlineSourceMap: true
+    });
+    program.emit();
 
-    // Write out a package.json to make it a module
-    writeFileSync(
-        path.join(outDir, 'package.json'),
-        JSON.stringify({ type: "module" })
-    );
+    const rel = path
+        .relative(path.dirname(entryTs), entryTs)
+        .replace(/\.ts$/, ".js");
 
-    return outJsPath;
+    writeFlag(outDir);
+    return path.join(outDir, rel);
+}
+
+function writeFlag(dir: string) {
+    try {
+        writeFileSync(
+            path.join(dir, "package.json"),
+            JSON.stringify({ type: "module" }),
+            { flag: "wx" }          // don’t overwrite if already there
+        );
+    } catch {}
 }
 
 export function loadEnvVariables(

@@ -55,11 +55,13 @@ export async function runner(): Promise<RunnerResult> {
     }
 
     // If agent is TS, transpile it first. Otherwise, use it as-is.
+    // @TODO - Make sure this transpilation update (for multiple files) is correct
     const absoluteAgentPath = path.resolve(agentPath);
-    let finalImportPath = absoluteAgentPath;
-    if (agentPath.endsWith('.ts')) {
-        finalImportPath = await transpileAgent(absoluteAgentPath);
-    }
+    const allowList = (agentConfig as any).agent_ts_files_to_transpile as string[] | undefined;
+    const finalImportPath = await transpileAgent(
+        absoluteAgentPath,
+        allowList
+    );
 
     // Load environment variables
     agentConfig.envVars = loadEnvVariables(
